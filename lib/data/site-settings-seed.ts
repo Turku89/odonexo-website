@@ -1,0 +1,17 @@
+import type { SiteSettings } from "@/lib/types/site-settings";
+
+export const defaultSiteSettings: SiteSettings = {
+  phone: "+355 69 500 0000",
+  whatsapp: "355695000000",
+  telegram: "odonexo",
+  email: "info@odonexo.com",
+  address: "Korçë / Tiranë, Albania",
+  hours: "Pzt - Cuma: 09:00 - 18:00\nCumartesi: 09:00 - 14:00",
+  facebook: "",
+  instagram: "",
+  linkedin: "",
+  freeShippingMinEur: 50,
+  shippingCostEur: 5,
+  telegramBotToken: "",
+  telegramChatId: "",
+};

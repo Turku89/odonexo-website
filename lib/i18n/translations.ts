@@ -1,0 +1,500 @@
+export type Locale = "tr" | "sq";
+
+export const locales: { code: Locale; label: string; flag: string }[] = [
+  { code: "tr", label: "Türkçe", flag: "🇹🇷" },
+  { code: "sq", label: "Shqip", flag: "🇦🇱" },
+];
+
+const tr = {
+  nav: {
+    home: "Ana Sayfa",
+    products: "Ürünler",
+    categories: "Kategoriler",
+    about: "Hakkımızda",
+    contact: "İletişim",
+  },
+  header: {
+    tagline: "Diş laboratuvar malzemelerinde güvenilir tedarikçiniz",
+    search: "Ara",
+    searchPlaceholder: "Ürün ara... (seramik, freze, alçı...)",
+    menu: "Menü",
+  },
+  footer: {
+    description:
+      "Diş laboratuvarları için kaliteli malzeme tedarikçisi. Quality Supplies for Better Smiles.",
+    categories: "Kategoriler",
+    corporate: "Kurumsal",
+    shipping: "Kargo & Teslimat",
+    returns: "İade Politikası",
+    privacy: "Gizlilik Politikası",
+    contact: "İletişim",
+    rights: "Tüm hakları saklıdır.",
+    ssl: "SSL Güvenli",
+  },
+  hero: {
+    badge: "Diş Laboratuvar Malzemeleri",
+    title1: "Kaliteli Malzemeler,",
+    title2: "Mükemmel Gülüşler",
+    description:
+      "Seramik, alçı, akrilik, freze ve laboratuvar ekipmanlarında geniş ürün yelpazesi. Hızlı teslimat, güvenli ödeme.",
+    ctaProducts: "Ürünleri Keşfet",
+    ctaCategories: "Kategorilere Göz At",
+    fastShipping: "Hızlı Kargo",
+    securePayment: "Güvenli Ödeme",
+    originalProduct: "Orijinal Ürün",
+    statProducts: "Ürün Çeşidi",
+    statCategories: "Kategori",
+    statDelivery: "Hızlı Teslimat",
+    statSatisfaction: "Memnuniyet",
+  },
+  trust: {
+    fastShipping: "Hızlı Kargo",
+    fastShippingDesc: "50 € üzeri siparişlerde ücretsiz kargo",
+    securePayment: "Güvenli Ödeme",
+    securePaymentDesc: "256-bit SSL ile korumalı ödeme",
+    support: "Teknik Destek",
+    supportDesc: "Uzman ekibimizden 7/24 destek",
+    easyReturn: "Kolay İade",
+    easyReturnDesc: "14 gün içinde koşulsuz iade",
+  },
+  categories: {
+    title: "Ürün Kategorileri",
+    subtitle: "Laboratuvarınızın ihtiyacı olan tüm malzemeler tek adreste",
+    products: "ürün",
+    pageTitle: "Kategoriler",
+    pageSubtitle: "İhtiyacınıza uygun kategoriyi seçerek ürünleri keşfedin",
+    back: "Kategorilere Dön",
+  },
+  products: {
+    featuredTitle: "Öne Çıkan Ürünler",
+    featuredSubtitle: "En çok tercih edilen laboratuvar malzemeleri",
+    viewAll: "Tümünü Gör",
+    viewAllBtn: "Tüm Ürünleri Gör",
+    allTitle: "Tüm Ürünler",
+    listing: "ürün listeleniyor",
+    searchFor: "araması",
+    filterCategories: "Kategoriler",
+    all: "Tümü",
+    notFound: "Bu kriterlere uygun ürün bulunamadı.",
+    back: "Ürünlere Dön",
+    sku: "SKU",
+    inStock: "Stokta",
+    outOfStock: "Stokta Yok",
+    addToCart: "Sepete Ekle",
+    added: "Eklendi!",
+    addedToCart: "Sepete Eklendi!",
+    related: "Benzer Ürünler",
+    fastShipping: "Hızlı Kargo",
+    fastShippingDesc: "1-3 iş günü teslimat",
+    originalProduct: "Orijinal Ürün",
+    originalProductDesc: "Yetkili distribütör garantisi",
+    badgeNew: "Yeni",
+    badgeSale: "İndirim",
+    badgeBestseller: "Çok Satan",
+    clickToEnlarge: "Büyütmek için tıklayın",
+    closeImage: "Kapat",
+    zoomIn: "Yakınlaştır",
+    zoomOut: "Uzaklaştır",
+    zoomReset: "Sıfırla",
+    zoomHint: "Kaydırarak yakınlaştırın · Çift tık · Sürükleyin",
+  },
+  cart: {
+    title: "Sepetim",
+    items: "ürün",
+    emptyTitle: "Sepetiniz Boş",
+    emptyDesc: "Henüz sepetinize ürün eklemediniz.",
+    startShopping: "Alışverişe Başla",
+    remove: "Kaldır",
+    clear: "Sepeti Temizle",
+    summary: "Sipariş Özeti",
+    subtotal: "Ara Toplam",
+    shipping: "Kargo",
+    free: "Ücretsiz",
+    freeShippingNote: "50 € üzeri siparişlerde kargo ücretsiz",
+    total: "Toplam",
+    checkout: "Siparişi Tamamla",
+    continue: "Alışverişe Devam Et",
+  },
+  checkout: {
+    title: "Siparişi Tamamla",
+    back: "Sepete Dön",
+    customerInfo: "Müşteri Bilgileri",
+    name: "Ad Soyad",
+    phone: "Telefon",
+    email: "E-posta",
+    address: "Teslimat Adresi",
+    notes: "Sipariş Notu (isteğe bağlı)",
+    placeOrder: "Siparişi Gönder",
+    placing: "Gönderiliyor...",
+    successTitle: "Siparişiniz Alındı!",
+    successDesc: "Sipariş numaranız:",
+    successThanks: "En kısa sürede sizinle iletişime geçeceğiz.",
+    backToShop: "Alışverişe Dön",
+    error: "Sipariş gönderilemedi. Lütfen tekrar deneyin.",
+  },
+  promo: {
+    badge: "Yeni Modeller",
+    title: "Zirkonya & Titanyum Diskler",
+    subtitle: "CAD/CAM frezeleme için premium dental disk çözümleri",
+    zirconDesc:
+      "Multi-layer dental zirkonya disk. Yüksek estetik ve dayanıklılık.",
+    titaniumDesc:
+      "Grade 5 titanyum disk. İmplant ve protez altyapıları için ideal.",
+    viewProduct: "Ürünü İncele",
+  },
+  cta: {
+    equipmentLabel: "Laboratuvar Ekipmanları",
+    equipmentTitle: "Profesyonel Ekipman Çözümleri",
+    equipmentDesc:
+      "Fırınlar, vakum pompaları ve polisaj ünitelerinde en iyi markalar.",
+    explore: "İncele",
+    bulkLabel: "Toplu Alım",
+    bulkTitle: "Kurumsal Teklif Alın",
+    bulkDesc:
+      "Laboratuvarınız için özel fiyatlandırma ve toplu alım avantajları.",
+    requestQuote: "Teklif İste",
+  },
+  newsletter: {
+    title: "Kampanyalardan Haberdar Olun",
+    description:
+      "Yeni ürünler, özel indirimler ve sektör haberleri için bültenimize abone olun.",
+    placeholder: "E-posta adresiniz",
+    subscribe: "Abone Ol",
+    success: "Teşekkürler! Bültenimize başarıyla abone oldunuz.",
+  },
+  about: {
+    title: "Hakkımızda",
+    subtitle:
+      "Quality Supplies for Better Smiles — Diş laboratuvarları için güvenilir malzeme tedarikçisi",
+    whoTitle: "Biz Kimiz?",
+    whoP1:
+      "Biz 35 yıllık laboratuvar ve klinik işletme tecrübesiyle en çok zorluk çektiğimiz konuya el attık. Laboratuvar ve kliniklerin, ne kadar uzman olsalar da, sarf malzeme ve makinelerde çıkan beklenmedik arızalardan ciddi sorunlar yaşadık. Hele ki mesele Arnavutluk olduğunda bu tür sorunları çözecek vaktiniz de olmaz. Dolayısıyla bir CAD/CAM gerekirken ikincisini yedekte tutmamız, kompresör veya malzeme stokta bulundurmamız gerekti. Anında servis alamadığımız cihazlar; malzemelerde sürekliliği olmayan ya da az giden malzemeleri bulamamak gibi sorunlar çok stres yarattı.",
+    whoP2:
+      "Şimdi bu sorunlardan kurtulmak için kendi markamızı oluşturup tam bir tedarik zinciri kurduk. Fiyat paritesi uygun, kaliteli malzemeleri ve makineleri kendimiz test edip tam uyumlu, sorunsuz çalışacak şekilde seçtik. Bu kaliteyi şeffaf ve her türlü servis desteğiyle meslektaşlarımızla paylaşıma açıyoruz. Tam bir ekip kurduk. Siz de sorunsuz çalışmaya hazır mısınız?",
+    whoP3:
+      "Art Dent bünyesinde Korça ve Tiran'da 7 uzman hekim, 2 cerrah, 1 profesör doktor ve 45 kişilik laboratuvar uzman ekibimizle yıllardır hizmet veriyoruz. Artık yeni kurduğumuz odonexo adı altında özel üretim malzeme, el aletleri ve makineleri internet siparişi üzerinden kullanımınıza sunuyoruz. Tam bir servis ağıyla garantili ürünlerle çalışmanız için duyduğunuz güvene şimdiden teşekkürler. odonexo.com olarak iyi malzeme ve ekipmanla stressiz, güvenilir çalışmanızı destekliyoruz.",
+    whoP4:
+      "Arnavutluk'un her noktasına gün içinde teslim ve servis hizmeti; implantlarda cerrahi destek; laboratuvar alanında lazer, titan bar blender ve Exocad desteğiyle sorunsuz iş teslim etmenizi sağlıyoruz. Başka yerden gelmiş hastanızda bilmediğiniz implant parçalarını (analog, transfer, abutment, MUA ve her türlü parçayı) odonexo.com'dan tedarik edebiliriz.",
+    valuesTitle: "Değerlerimiz",
+    valuesSubtitle: "Her adımda bizi yönlendiren ilkeler",
+    quality: "Kalite",
+    qualityDesc:
+      "Sadece orijinal ve sertifikalı ürünleri tedarik ediyoruz. Tüm ürünlerimiz yetkili distribütör garantisi altındadır.",
+    expertise: "Uzmanlık",
+    expertiseDesc:
+      "Diş laboratuvar sektöründe yılların deneyimi ile teknik destek ve ürün danışmanlığı sunuyoruz.",
+    accessibility: "Erişilebilirlik",
+    accessibilityDesc:
+      "Türkiye genelinde hızlı kargo ile laboratuvarınıza ihtiyaç duyduğunuz malzemeleri ulaştırıyoruz.",
+    trust: "Güven",
+    trustDesc:
+      "Müşteri memnuniyeti odaklı hizmet anlayışımız ile uzun vadeli iş ortaklıkları kuruyoruz.",
+  },
+  contact: {
+    title: "İletişim",
+    subtitle: "Sorularınız ve kurumsal teklif talepleriniz için bize ulaşın",
+    address: "Adres",
+    addressValue: "Bağdat Cad. No: 123\nKadıköy, İstanbul 34710",
+    phone: "Telefon",
+    whatsapp: "WhatsApp",
+    telegram: "Telegram",
+    email: "E-posta",
+    hours: "Çalışma Saatleri",
+    hoursValue: "Pzt - Cuma: 09:00 - 18:00\nCumartesi: 09:00 - 14:00",
+    formTitle: "Bize Yazın",
+    successTitle: "Mesajınız başarıyla gönderildi!",
+    successDesc: "En kısa sürede size dönüş yapacağız.",
+    name: "Ad Soyad",
+    emailLabel: "E-posta",
+    subject: "Konu",
+    message: "Mesaj",
+    send: "Gönder",
+    subjects: {
+      general: "Genel Bilgi",
+      product: "Ürün Sorgusu",
+      corporate: "Kurumsal Teklif",
+      support: "Teknik Destek",
+      feedback: "Şikayet / Öneri",
+    },
+  },
+  categoryData: {
+    "seramik-porselen": {
+      name: "Seramik & Porselen",
+      description: "Diş seramikleri, porselen tozları ve glaze malzemeleri",
+    },
+    "alci-modelaj": {
+      name: "Alçı & Modelaj",
+      description: "Alçı türleri, modelaj mumları ve articulator malzemeleri",
+    },
+    "akrilik-protez": {
+      name: "Akrilik & Protez",
+      description: "Akrilik reçineler, diş setleri ve protez malzemeleri",
+    },
+    "freze-el-aletleri": {
+      name: "Freze & El Aletleri",
+      description: "CAD/CAM frezeler, el aletleri ve rotary sistemler",
+    },
+    "laboratuvar-ekipmanlari": {
+      name: "Laboratuvar Ekipmanları",
+      description: "Fırınlar, vakum pompaları ve polisaj üniteleri",
+    },
+    "sarf-malzemeler": {
+      name: "Sarf Malzemeler",
+      description: "Eldivenler, maskeler, dezenfektanlar ve tek kullanımlık ürünler",
+    },
+  },
+};
+
+const sq = {
+  nav: {
+    home: "Kryefaqja",
+    products: "Produktet",
+    categories: "Kategoritë",
+    about: "Rreth Nesh",
+    contact: "Kontakti",
+  },
+  header: {
+    tagline: "Furnizuesi i besueshëm për materiale laboratori dentar",
+    search: "Kërko",
+    searchPlaceholder: "Kërko produkte... (qeramikë, freza, allçi...)",
+    menu: "Menu",
+  },
+  footer: {
+    description:
+      "Furnizues cilësor i materialeve për laboratorë dentarë. Quality Supplies for Better Smiles.",
+    categories: "Kategoritë",
+    corporate: "Korporata",
+    shipping: "Transporti & Dorëzimi",
+    returns: "Politika e Kthimit",
+    privacy: "Politika e Privatësisë",
+    contact: "Kontakti",
+    rights: "Të gjitha të drejtat e rezervuara.",
+    ssl: "SSL i Sigurt",
+  },
+  hero: {
+    badge: "Materiale Laboratori Dentar",
+    title1: "Materiale Cilësore,",
+    title2: "Buzëqeshje të Përsosura",
+    description:
+      "Gamë e gjerë produktesh në qeramikë, allçi, akrilik, freza dhe pajisje laboratori. Dorëzim i shpejtë, pagesë e sigurt.",
+    ctaProducts: "Eksploro Produktet",
+    ctaCategories: "Shiko Kategoritë",
+    fastShipping: "Transport i Shpejtë",
+    securePayment: "Pagesë e Sigurt",
+    originalProduct: "Produkt Origjinal",
+    statProducts: "Lloje Produktesh",
+    statCategories: "Kategori",
+    statDelivery: "Dorëzim i Shpejtë",
+    statSatisfaction: "Kënaqësi",
+  },
+  trust: {
+    fastShipping: "Transport i Shpejtë",
+    fastShippingDesc: "Transport falas për porosi mbi 50 €",
+    securePayment: "Pagesë e Sigurt",
+    securePaymentDesc: "Pagesë e mbrojtur me SSL 256-bit",
+    support: "Mbështetje Teknike",
+    supportDesc: "Mbështetje 24/7 nga ekipi ynë i ekspertëve",
+    easyReturn: "Kthim i Lehtë",
+    easyReturnDesc: "Kthim pa kushte brenda 14 ditëve",
+  },
+  categories: {
+    title: "Kategoritë e Produkteve",
+    subtitle: "Të gjitha materialet që laboratori juaj ka nevojë, në një vend",
+    products: "produkte",
+    pageTitle: "Kategoritë",
+    pageSubtitle: "Zgjidhni kategorinë e duhur dhe eksploroni produktet",
+    back: "Kthehu te Kategoritë",
+  },
+  products: {
+    featuredTitle: "Produktet e Zgjedhura",
+    featuredSubtitle: "Materialet më të kërkuara të laboratorit dentar",
+    viewAll: "Shiko Të Gjitha",
+    viewAllBtn: "Shiko Të Gjitha Produktet",
+    allTitle: "Të Gjitha Produktet",
+    listing: "produkte të listuara",
+    searchFor: "kërkim për",
+    filterCategories: "Kategoritë",
+    all: "Të Gjitha",
+    notFound: "Nuk u gjet asnjë produkt për këto kritere.",
+    back: "Kthehu te Produktet",
+    sku: "SKU",
+    inStock: "Në Stok",
+    outOfStock: "Jashtë Stokut",
+    addToCart: "Shto në Shportë",
+    added: "U shtua!",
+    addedToCart: "U shtua në shportë!",
+    related: "Produkte të Ngjashme",
+    fastShipping: "Transport i Shpejtë",
+    fastShippingDesc: "Dorëzim brenda 1-3 ditëve pune",
+    originalProduct: "Produkt Origjinal",
+    originalProductDesc: "Garanci e distribuitorit të autorizuar",
+    badgeNew: "E Re",
+    badgeSale: "Zbritje",
+    badgeBestseller: "Më e Shitura",
+    clickToEnlarge: "Kliko për të zmadhuar",
+    closeImage: "Mbyll",
+    zoomIn: "Zmadho",
+    zoomOut: "Zvogëlo",
+    zoomReset: "Rivendos",
+    zoomHint: "Rrotullo për zmadhim · Dyshe klik · Tërhiq",
+  },
+  cart: {
+    title: "Shporta Ime",
+    items: "produkte",
+    emptyTitle: "Shporta Juaj është Bosh",
+    emptyDesc: "Nuk keni shtuar ende asnjë produkt në shportë.",
+    startShopping: "Fillo Blerjet",
+    remove: "Hiq",
+    clear: "Pastro Shportën",
+    summary: "Përmbledhja e Porosisë",
+    subtotal: "Nëntotali",
+    shipping: "Transporti",
+    free: "Falas",
+    freeShippingNote: "Transport falas për porosi mbi 50 €",
+    total: "Totali",
+    checkout: "Përfundo Porosinë",
+    continue: "Vazhdo Blerjet",
+  },
+  checkout: {
+    title: "Përfundo Porosinë",
+    back: "Kthehu te Shporta",
+    customerInfo: "Të Dhënat e Klientit",
+    name: "Emri dhe Mbiemri",
+    phone: "Telefoni",
+    email: "E-mail",
+    address: "Adresa e Dorëzimit",
+    notes: "Shënim (opsionale)",
+    placeOrder: "Dërgo Porosinë",
+    placing: "Duke dërguar...",
+    successTitle: "Porosia u pranua!",
+    successDesc: "Numri i porosisë:",
+    successThanks: "Do t'ju kontaktojmë së shpejti.",
+    backToShop: "Kthehu te Blerjet",
+    error: "Porosia nuk u dërgua. Provoni përsëri.",
+  },
+  promo: {
+    badge: "Modele të Reja",
+    title: "Diska Zirkoni & Titani",
+    subtitle: "Zgjidhje premium disk dentarë për frezim CAD/CAM",
+    zirconDesc:
+      "Disk zirkoni dentar multi-layer. Estetikë dhe qëndrueshmëri e lartë.",
+    titaniumDesc:
+      "Disk titani Grade 5. Ideal për implant dhe bazë proteze.",
+    viewProduct: "Shiko Produktin",
+  },
+  cta: {
+    equipmentLabel: "Pajisje Laboratori",
+    equipmentTitle: "Zgjidhje Profesionale Pajisjesh",
+    equipmentDesc:
+      "Markat më të mira në furrë, pompa vakumi dhe njësitë e polirimit.",
+    explore: "Eksploro",
+    bulkLabel: "Blerje me Shumicë",
+    bulkTitle: "Kërko Ofertë Korporative",
+    bulkDesc:
+      "Çmime speciale dhe avantazhe blerjeje me shumicë për laboratorin tuaj.",
+    requestQuote: "Kërko Ofertë",
+  },
+  newsletter: {
+    title: "Informohu për Fushatat",
+    description:
+      "Abonohu në buletinin tonë për produkte të reja, zbritje speciale dhe lajme të sektorit.",
+    placeholder: "Adresa juaj e emailit",
+    subscribe: "Abonohu",
+    success: "Faleminderit! U abonuat me sukses në buletinin tonë.",
+  },
+  about: {
+    title: "Rreth Nesh",
+    subtitle:
+      "Quality Supplies for Better Smiles — Furnizues i besueshëm i materialeve për laboratorë dentarë",
+    whoTitle: "Kush Jemi Ne?",
+    whoP1:
+      "Me 35 vite përvojë në drejtimin e laboratorëve dhe klinikave, i kushtuam vëmendje problematikës që na ka shqetësuar më shumë. Edhe laboratorët dhe klinikat më të specializuara hasin vështirësi të mëdha nga defektet e papritura të materialeve dhe makinerive. Kur çështja është në Shqipëri, shpesh nuk mbetet kohë për t'i zgjidhur. Prandaj na është dashur të mbajmë një CAD/CAM rezervë, kompresor ose materiale në stok. Pajisjet pa servis të menjëhershëm dhe mungesa e materialeve me vazhdimësi kanë krijuar shumë stres.",
+    whoP2:
+      "Për t'u çliruar nga këto probleme krijuam markën tonë dhe një zinxhir të plotë furnizimi. Materialet dhe makineritë cilësore i kemi testuar vetë, me paritet të përshtatshëm çmimi, që të punojnë në harmoni dhe pa probleme. Këtë cilësi e hapim për kolegët tanë me transparencë dhe mbështetje të plotë servisi. Kemi formuar ekip të plotë. Jeni gati për të punuar pa stres?",
+    whoP3:
+      "Në kuadër të Art Dent, në Korçë dhe Tiranë, me 7 mjekë specialistë, 2 kirurgë, 1 profesor doktor dhe një ekip laboratori me 45 specialistë, shërbejmë prej vitesh. Tani nën emrin e ri odonexo ofrojmë materiale të prodhimit të specializuar, vegla dore dhe makineri me porosi online. Faleminderit për besimin që na dini: me rrjet të plotë servisi dhe produkte të garantuara. odonexo.com mbështet punën tuaj pa stres dhe të besueshme me materiale e pajisje cilësore.",
+    whoP4:
+      "Ofrojmë dorëzim dhe servis brenda ditës në çdo pikë të Shqipërisë; mbështetje kirurgjikale për implantet; mbështetje me laser, titan bar blender dhe Exocad në laborator që të dorëzoni punë pa problem. Për pacientë të ardhur nga jashtë, pjesët e panjohura të implantit (analog, transfer, abutment, MUA dhe çdo pjesë tjetër) i furnizojmë nga odonexo.com.",
+    valuesTitle: "Vlerat Tona",
+    valuesSubtitle: "Parimet që na udhëheqin në çdo hap",
+    quality: "Cilësia",
+    qualityDesc:
+      "Furnizojmë vetëm produkte origjinale dhe të certifikuara. Të gjitha produktet tona janë nën garancinë e distribuitorit të autorizuar.",
+    expertise: "Ekspertiza",
+    expertiseDesc:
+      "Ofrojmë mbështetje teknike dhe këshillim produktesh me vite përvojë në sektorin e laboratorëve dentarë.",
+    accessibility: "Aksesueshmëria",
+    accessibilityDesc:
+      "Dërgojmë materialet që ju nevojiten në laboratorin tuaj me transport të shpejtë në të gjithë Turqinë.",
+    trust: "Besimi",
+    trustDesc:
+      "Ndërtojmë partneritete afatgjata me fokus në kënaqësinë e klientit.",
+  },
+  contact: {
+    title: "Kontakti",
+    subtitle: "Na kontaktoni për pyetje dhe kërkesa ofertash korporative",
+    address: "Adresa",
+    addressValue: "Bağdat Cad. No: 123\nKadıköy, Stamboll 34710",
+    phone: "Telefoni",
+    whatsapp: "WhatsApp",
+    telegram: "Telegram",
+    email: "Email",
+    hours: "Orari i Punës",
+    hoursValue: "Hën - Pre: 09:00 - 18:00\nSht: 09:00 - 14:00",
+    formTitle: "Na Shkruani",
+    successTitle: "Mesazhi juaj u dërgua me sukses!",
+    successDesc: "Do t'ju kthejmë përgjigje sa më shpejt të jetë e mundur.",
+    name: "Emri dhe Mbiemri",
+    emailLabel: "Email",
+    subject: "Subjekti",
+    message: "Mesazhi",
+    send: "Dërgo",
+    subjects: {
+      general: "Informacion i Përgjithshëm",
+      product: "Pyetje për Produkt",
+      corporate: "Ofertë Korporative",
+      support: "Mbështetje Teknike",
+      feedback: "Ankesë / Sugjerim",
+    },
+  },
+  categoryData: {
+    "seramik-porselen": {
+      name: "Qeramikë & Porcelan",
+      description: "Qeramikë dentare, pluhur porcelani dhe materiale glaze",
+    },
+    "alci-modelaj": {
+      name: "Allçi & Modelim",
+      description: "Lloje allçish, dyll modelimi dhe materiale articulator",
+    },
+    "akrilik-protez": {
+      name: "Akrilik & Proteza",
+      description: "Rresina akrilike, sete dhëmbësh dhe materiale proteze",
+    },
+    "freze-el-aletleri": {
+      name: "Freza & Vegla Dorë",
+      description: "Freza CAD/CAM, vegla dorë dhe sisteme rotary",
+    },
+    "laboratuvar-ekipmanlari": {
+      name: "Pajisje Laboratori",
+      description: "Furrë, pompa vakumi dhe njësitë e polirimit",
+    },
+    "sarf-malzemeler": {
+      name: "Materiale Harxhimi",
+      description: "Doreza, maska, dezinfektues dhe produkte njëpërdorimshme",
+    },
+  },
+};
+
+export type TranslationKeys = typeof tr;
+
+export const translations: Record<Locale, TranslationKeys> = { tr, sq };
+
+export function getCategoryTranslation(
+  locale: Locale,
+  slug: string
+): { name: string; description: string } {
+  const data = translations[locale].categoryData;
+  const entry = data[slug as keyof typeof data];
+  if (entry) return entry;
+  return { name: slug, description: "" };
+}
