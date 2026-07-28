@@ -95,15 +95,7 @@ export default function ProductDetailClient({
             )}
           </div>
 
-          <p
-            className={`mt-6 text-neutral leading-relaxed break-words whitespace-pre-line transition-opacity ${
-              translating ? "opacity-60" : "opacity-100"
-            }`}
-          >
-            {displayDescription}
-          </p>
-
-          <div className="mt-6 flex items-center gap-2">
+          <div className="mt-5 flex items-center gap-2">
             {product.inStock ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700">
                 <Check className="h-4 w-4" />
@@ -116,9 +108,17 @@ export default function ProductDetailClient({
             )}
           </div>
 
-          <div className="mt-8">
+          <div className="mt-5">
             <AddToCartButton product={product} />
           </div>
+
+          <p
+            className={`mt-8 text-neutral leading-relaxed break-words whitespace-pre-line transition-opacity ${
+              translating ? "opacity-60" : "opacity-100"
+            }`}
+          >
+            {displayDescription}
+          </p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             <div className="flex items-center gap-3 rounded-lg border border-neutral-border p-4">

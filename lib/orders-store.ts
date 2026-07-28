@@ -8,10 +8,20 @@ import {
   recalculateOrderTotals,
 } from "@/lib/order-helpers";
 import { readSiteSettings } from "@/lib/site-settings-store";
+import {
+  isOrdersBlobEnabled,
+  readOrdersFromBlob,
+  writeOrdersToBlob,
+} from "@/lib/orders-blob";
 
 function ordersPath(dir: string) {
   return path.join(dir, "orders.json");
 }
+
+/** Aynı süreç (instance) içinde boş /tmp okumalarına karşı yedek. */
+const globalStore = globalThis as typeof globalThis & {
+  __odonexoOrdersCache?: Order[];
+};
 
 function normalizeOrder(order: Order): Order {
   return {
@@ -21,10 +31,36 @@ function normalizeOrder(order: Order): Order {
   };
 }
 
+function mergeOrderLists(...lists: (Order[] | null | undefined)[]): Order[] {
+  const map = new Map<string, Order>();
+
+  for (const list of lists) {
+    if (!list) continue;
+    for (const raw of list) {
+      const order = normalizeOrder(raw);
+      const existing = map.get(order.id);
+      if (!existing) {
+        map.set(order.id, order);
+        continue;
+      }
+      const existingTime = new Date(
+        existing.updatedAt || existing.createdAt
+      ).getTime();
+      const nextTime = new Date(order.updatedAt || order.createdAt).getTime();
+      if (nextTime >= existingTime) {
+        map.set(order.id, order);
+      }
+    }
+  }
+
+  return Array.from(map.values());
+}
+
 async function readOrdersFrom(file: string): Promise<Order[] | null> {
   try {
     const raw = await fs.readFile(file, "utf-8");
     const parsed = JSON.parse(raw) as Order[];
+    if (!Array.isArray(parsed)) return null;
     return parsed.map(normalizeOrder);
   } catch {
     return null;
@@ -32,38 +68,35 @@ async function readOrdersFrom(file: string): Promise<Order[] | null> {
 }
 
 async function readAllOrdersRaw(): Promise<Order[]> {
+  const fromBlob = isOrdersBlobEnabled()
+    ? await readOrdersFromBlob()
+    : null;
   const fromWritable = await readOrdersFrom(ordersPath(getWritableDataDir()));
   const fromRepo = await readOrdersFrom(ordersPath(getReadableDataDir()));
+  const fromMemory = globalStore.__odonexoOrdersCache || null;
 
-  const map = new Map<string, Order>();
-
-  for (const order of fromRepo || []) {
-    map.set(order.id, order);
-  }
-
-  for (const order of fromWritable || []) {
-    const existing = map.get(order.id);
-    if (!existing) {
-      map.set(order.id, order);
-      continue;
-    }
-    const existingTime = new Date(
-      existing.updatedAt || existing.createdAt
-    ).getTime();
-    const nextTime = new Date(order.updatedAt || order.createdAt).getTime();
-    if (nextTime >= existingTime) {
-      map.set(order.id, order);
-    }
-  }
-
-  return Array.from(map.values());
+  // Blob varsa onu birincil kaynak say; yine de birleştir (eksik güncelleme olmasın)
+  const merged = mergeOrderLists(fromRepo, fromWritable, fromMemory, fromBlob);
+  globalStore.__odonexoOrdersCache = merged;
+  return merged;
 }
 
 async function writeOrders(orders: Order[]): Promise<void> {
+  const normalized = orders.map(normalizeOrder);
+  globalStore.__odonexoOrdersCache = normalized;
+
+  // Önce Blob (Vercel'de kalıcı)
+  if (isOrdersBlobEnabled()) {
+    const ok = await writeOrdersToBlob(normalized);
+    if (!ok) {
+      console.error("Blob yazılamadı — yerel /tmp yedeğine devam");
+    }
+  }
+
   const dir = getWritableDataDir();
   const file = ordersPath(dir);
   await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(file, JSON.stringify(orders, null, 2), "utf-8");
+  await fs.writeFile(file, JSON.stringify(normalized, null, 2), "utf-8");
 
   if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
     try {
@@ -71,7 +104,7 @@ async function writeOrders(orders: Order[]): Promise<void> {
       await fs.mkdir(repoDir, { recursive: true });
       await fs.writeFile(
         ordersPath(repoDir),
-        JSON.stringify(orders, null, 2),
+        JSON.stringify(normalized, null, 2),
         "utf-8"
       );
     } catch {
@@ -104,17 +137,23 @@ export async function getLatestNewOrderId(): Promise<string | null> {
 }
 
 export async function saveOrder(order: Order): Promise<Order> {
+  // Yazmadan hemen önce tekrar oku (başka instance/blob güncellemesi)
   const orders = await readAllOrdersRaw();
   const withStatus: Order = {
     ...order,
     status: normalizeOrderStatus(order.status),
+    updatedAt: order.updatedAt || new Date().toISOString(),
   };
-  orders.unshift(withStatus);
+
+  const withoutDup = orders.filter((o) => o.id !== withStatus.id);
+  withoutDup.unshift(withStatus);
 
   try {
-    await writeOrders(orders);
+    await writeOrders(withoutDup);
   } catch (err) {
     console.error("Sipariş dosyaya yazılamadı:", err);
+    // Bellekte tut — en azından bu instance görsün
+    globalStore.__odonexoOrdersCache = withoutDup;
   }
 
   return withStatus;
@@ -173,6 +212,7 @@ export async function updateOrder(
     await writeOrders(orders);
   } catch (err) {
     console.error("Sipariş güncellenemedi:", err);
+    globalStore.__odonexoOrdersCache = orders;
   }
 
   return orders[index];

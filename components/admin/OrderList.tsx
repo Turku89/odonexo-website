@@ -53,21 +53,53 @@ export default function OrderList() {
   const loadOrders = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     else setRefreshing(true);
-    setError("");
+    if (!silent) setError("");
 
     try {
       const res = await fetch(`/api/admin/orders?t=${Date.now()}`, {
         cache: "no-store",
-        headers: { "Cache-Control": "no-cache" },
+        headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
       });
       if (!res.ok) {
-        setError("Siparişler yüklenemedi");
+        if (!silent) setError("Siparişler yüklenemedi");
         return;
       }
       const data = await res.json();
-      setOrders(Array.isArray(data) ? data : []);
+      if (!Array.isArray(data)) {
+        if (!silent) setError("Siparişler yüklenemedi");
+        return;
+      }
+
+      setOrders((prev) => {
+        // Sessiz yenilemede boş liste gelirse (soğuk instance) mevcut listeyi silme
+        if (silent && data.length === 0 && prev.length > 0) {
+          return prev;
+        }
+
+        // ID bazlı birleştir — daha yeni kayıt kazansın
+        if (silent && prev.length > 0) {
+          const map = new Map<string, Order>();
+          for (const o of prev) map.set(o.id, o);
+          for (const o of data as Order[]) {
+            const existing = map.get(o.id);
+            if (!existing) {
+              map.set(o.id, o);
+              continue;
+            }
+            const a = new Date(existing.updatedAt || existing.createdAt).getTime();
+            const b = new Date(o.updatedAt || o.createdAt).getTime();
+            if (b >= a) map.set(o.id, o);
+          }
+          return Array.from(map.values()).sort(
+            (x, y) =>
+              new Date(y.createdAt).getTime() - new Date(x.createdAt).getTime()
+          );
+        }
+
+        return data as Order[];
+      });
     } catch {
-      setError("Siparişler yüklenemedi (ağ hatası)");
+      if (!silent) setError("Siparişler yüklenemedi (ağ hatası)");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -159,7 +191,7 @@ export default function OrderList() {
         </div>
         <button
           type="button"
-          onClick={() => void loadOrders(true)}
+          onClick={() => void loadOrders(false)}
           disabled={refreshing}
           className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
         >
