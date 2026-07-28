@@ -67,28 +67,33 @@ export default function CheckoutPage() {
     setSubmitting(true);
     setError("");
 
-    const res = await fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...form,
-        items: items.map(({ product, quantity }) => ({
-          productId: product.id,
-          quantity,
-        })),
-      }),
-    });
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          items: items.map(({ product, quantity }) => ({
+            productId: product.id,
+            quantity,
+          })),
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
-    if (res.ok) {
-      setOrderId(data.orderId);
-      clearCart();
-      router.refresh();
-    } else {
-      setError(data.error || t.checkout.error);
+      if (res.ok) {
+        setOrderId(data.orderId);
+        clearCart();
+        router.refresh();
+      } else {
+        setError(data.error || t.checkout.error);
+      }
+    } catch {
+      setError(t.checkout.error);
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   return (

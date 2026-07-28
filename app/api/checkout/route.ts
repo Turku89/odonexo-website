@@ -77,11 +77,16 @@ export async function POST(request: Request) {
 
   await saveOrder(order);
 
+  let telegramSent = false;
   try {
-    await sendTelegramOrderNotification(order, settings);
-  } catch {
-    /* sipariş kaydedildi, bildirim başarısız olsa da devam */
+    telegramSent = await sendTelegramOrderNotification(order, settings);
+  } catch (err) {
+    console.error("Telegram sipariş bildirimi hatası:", err);
   }
 
-  return NextResponse.json({ success: true, orderId: order.id });
+  return NextResponse.json({
+    success: true,
+    orderId: order.id,
+    telegramSent,
+  });
 }

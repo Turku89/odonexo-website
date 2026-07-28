@@ -34,7 +34,9 @@ export async function PUT(request: Request) {
     telegramBotToken: body.telegramBotToken?.trim()
       ? body.telegramBotToken.trim()
       : current.telegramBotToken,
-    telegramChatId: body.telegramChatId ?? "",
+    telegramChatId: body.telegramChatId?.trim()
+      ? body.telegramChatId.trim()
+      : current.telegramChatId,
   });
 
   revalidatePath("/", "layout");

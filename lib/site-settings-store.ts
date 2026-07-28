@@ -2,9 +2,9 @@ import { promises as fs } from "fs";
 import path from "path";
 import type { SiteSettings, SiteSettingsInput } from "@/lib/types/site-settings";
 import { defaultSiteSettings } from "@/lib/data/site-settings-seed";
+import { getReadableDataDir, getWritableDataDir } from "@/lib/data-paths";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const SETTINGS_FILE = path.join(DATA_DIR, "site-settings.json");
+const SETTINGS_FILE_NAME = "site-settings.json";
 
 type LegacySiteSettings = Partial<SiteSettings> & {
   phoneDisplay?: string;
@@ -17,6 +17,10 @@ type LegacySiteSettings = Partial<SiteSettings> & {
   tryPerEur?: number;
   allPerTry?: number;
 };
+
+function settingsPath(dir: string) {
+  return path.join(dir, SETTINGS_FILE_NAME);
+}
 
 function normalizeSettings(raw: LegacySiteSettings): SiteSettings {
   const address =
@@ -36,7 +40,7 @@ function normalizeSettings(raw: LegacySiteSettings): SiteSettings {
     raw.phoneDisplay?.trim() ||
     defaultSiteSettings.phone;
 
-  const merged: SiteSettings = {
+  return {
     ...defaultSiteSettings,
     phone,
     whatsapp: raw.whatsapp ?? defaultSiteSettings.whatsapp,
@@ -65,39 +69,63 @@ function normalizeSettings(raw: LegacySiteSettings): SiteSettings {
       "",
     updatedAt: raw.updatedAt,
   };
-
-  return merged;
 }
 
-async function ensureDataFile(): Promise<SiteSettings> {
-  try {
-    await fs.access(SETTINGS_FILE);
-    const raw = await fs.readFile(SETTINGS_FILE, "utf-8");
-    return normalizeSettings(JSON.parse(raw) as LegacySiteSettings);
-  } catch {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-    await fs.writeFile(
-      SETTINGS_FILE,
-      JSON.stringify(defaultSiteSettings, null, 2),
-      "utf-8"
-    );
-    return defaultSiteSettings;
+async function readRawSettings(): Promise<LegacySiteSettings> {
+  const candidates = [
+    settingsPath(getWritableDataDir()),
+    settingsPath(getReadableDataDir()),
+  ];
+
+  for (const file of candidates) {
+    try {
+      const raw = await fs.readFile(file, "utf-8");
+      return JSON.parse(raw) as LegacySiteSettings;
+    } catch {
+      /* next */
+    }
   }
+
+  return defaultSiteSettings;
 }
 
 export async function readSiteSettings(): Promise<SiteSettings> {
-  return ensureDataFile();
+  return normalizeSettings(await readRawSettings());
 }
 
 export async function updateSiteSettings(
   input: SiteSettingsInput
 ): Promise<SiteSettings> {
-  const current = await ensureDataFile();
+  const currentRaw = await readRawSettings();
+  const current = normalizeSettings(currentRaw);
+
   const updated: SiteSettings = {
     ...current,
     ...input,
     updatedAt: new Date().toISOString(),
   };
-  await fs.writeFile(SETTINGS_FILE, JSON.stringify(updated, null, 2), "utf-8");
-  return updated;
+
+  const toPersist: SiteSettings = {
+    ...updated,
+    telegramBotToken: process.env.TELEGRAM_BOT_TOKEN?.trim()
+      ? currentRaw.telegramBotToken || ""
+      : updated.telegramBotToken,
+    telegramChatId: process.env.TELEGRAM_CHAT_ID?.trim()
+      ? currentRaw.telegramChatId || ""
+      : updated.telegramChatId,
+  };
+
+  const dir = getWritableDataDir();
+  try {
+    await fs.mkdir(dir, { recursive: true });
+    await fs.writeFile(
+      settingsPath(dir),
+      JSON.stringify(toPersist, null, 2),
+      "utf-8"
+    );
+  } catch (err) {
+    console.error("Ayarlar dosyaya yazılamadı:", err);
+  }
+
+  return normalizeSettings(toPersist);
 }

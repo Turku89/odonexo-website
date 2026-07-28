@@ -76,30 +76,27 @@ export default function ContactSettingsForm({
     setTelegramTestMsg("");
     setError("");
 
-    const saveRes = await fetch("/api/admin/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+    try {
+      const testRes = await fetch("/api/admin/settings/test-telegram", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          telegramBotToken: form.telegramBotToken,
+          telegramChatId: form.telegramChatId,
+        }),
+      });
+      const data = await testRes.json();
 
-    if (!saveRes.ok) {
-      const data = await saveRes.json();
-      setError(data.error || "Ayarlar kaydedilemedi");
+      if (testRes.ok) {
+        setTelegramTestMsg("Test mesajı gönderildi! Telegram'ı kontrol edin.");
+      } else {
+        setError(data.error || "Telegram testi başarısız");
+      }
+    } catch {
+      setError("Telegram test isteği başarısız (ağ veya zaman aşımı).");
+    } finally {
       setTestingTelegram(false);
-      return;
     }
-
-    const testRes = await fetch("/api/admin/settings/test-telegram", {
-      method: "POST",
-    });
-    const data = await testRes.json();
-
-    if (testRes.ok) {
-      setTelegramTestMsg("Test mesajı gönderildi!");
-    } else {
-      setError(data.error || "Telegram testi başarısız");
-    }
-    setTestingTelegram(false);
   };
 
   return (
@@ -174,7 +171,10 @@ export default function ContactSettingsForm({
         <h2 className="font-semibold text-slate-800">Telegram Sipariş Bildirimi</h2>
         <p className="text-sm text-slate-500">
           Yeni sipariş geldiğinde Telegram botunuz üzerinden detaylı bildirim
-          alırsınız. Bot oluşturmak için{" "}
+          alırsınız. Canlı sitede (Vercel) token ve chat ID&apos;yi Environment
+          Variables olarak da ekleyin:{" "}
+          <code className="text-xs">TELEGRAM_BOT_TOKEN</code>,{" "}
+          <code className="text-xs">TELEGRAM_CHAT_ID</code>. Bot için{" "}
           <a
             href="https://t.me/BotFather"
             target="_blank"
