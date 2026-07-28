@@ -1,4 +1,4 @@
-export type OrderStatus = "new" | "seen" | "approved";
+export type OrderStatus = "new" | "seen" | "approved" | "cancelled";
 
 export type OrderLocale = "tr" | "sq" | "en";
 

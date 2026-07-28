@@ -3,28 +3,35 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Save } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Save, XCircle } from "lucide-react";
 import { formatPriceFromEur } from "@/lib/currency";
 import type { Order, OrderItem, OrderStatus } from "@/lib/types/order";
-
-const statusLabel: Record<OrderStatus, string> = {
-  new: "Yeni",
-  seen: "Görüldü",
-  approved: "Onaylandı",
-};
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type EditItem = OrderItem;
 
 export default function OrderDetail({ orderId }: { orderId: string }) {
   const router = useRouter();
+  const { t, locale } = useLanguage();
   const [order, setOrder] = useState<Order | null>(null);
   const [items, setItems] = useState<EditItem[]>([]);
   const [adminNote, setAdminNote] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [approving, setApproving] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  const statusLabel: Record<OrderStatus, string> = {
+    new: t.admin.orderStatusNew,
+    seen: t.admin.orderStatusSeen,
+    approved: t.admin.orderStatusApproved,
+    cancelled: t.admin.orderStatusCancelled,
+  };
+
+  const dateLocale =
+    locale === "en" ? "en-GB" : locale === "sq" ? "sq-AL" : "tr-TR";
 
   useEffect(() => {
     let cancelled = false;
@@ -170,6 +177,34 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
     }
   };
 
+  const cancelOrder = async () => {
+    if (!order) return;
+    setCancelling(true);
+    setError("");
+    setMessage("");
+    try {
+      const res = await fetch(`/api/admin/orders/${order.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "cancelled", items, adminNote }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "İptal başarısız");
+        return;
+      }
+      setOrder(data);
+      setItems(data.items);
+      setMessage(t.admin.orderCancelledMsg);
+      window.dispatchEvent(new Event("odonexo-orders-changed"));
+      router.refresh();
+    } catch {
+      setError("İptal işlemi başarısız");
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   if (loading) {
     return <p className="text-sm text-slate-500">Yükleniyor…</p>;
   }
@@ -187,7 +222,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
 
   if (!order) return null;
 
-  const locked = order.status === "approved";
+  const locked = order.status === "approved" || order.status === "cancelled";
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -203,7 +238,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">{order.id}</h1>
           <p className="mt-1 text-sm text-slate-500">
-            {new Date(order.createdAt).toLocaleString("tr-TR")} ·{" "}
+            {new Date(order.createdAt).toLocaleString(dateLocale)} ·{" "}
             <span className="font-medium text-slate-700">
               {statusLabel[order.status]}
             </span>
@@ -211,7 +246,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
               <span className="text-green-600">
                 {" "}
                 · E-posta gönderildi (
-                {new Date(order.emailSentAt).toLocaleString("tr-TR")})
+                {new Date(order.emailSentAt).toLocaleString(dateLocale)})
               </span>
             ) : null}
           </p>
@@ -230,12 +265,21 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
               </button>
               <button
                 type="button"
-                disabled={approving}
+                disabled={approving || cancelling}
                 onClick={approveOrder}
                 className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
               >
                 <CheckCircle2 className="h-4 w-4" />
                 {approving ? "Onaylanıyor…" : "Onaylandı — E-posta Gönder"}
+              </button>
+              <button
+                type="button"
+                disabled={cancelling || approving}
+                onClick={cancelOrder}
+                className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100 disabled:opacity-50"
+              >
+                <XCircle className="h-4 w-4" />
+                {cancelling ? t.admin.orderCancelling : t.admin.orderCancel}
               </button>
             </>
           )}

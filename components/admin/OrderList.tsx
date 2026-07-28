@@ -5,24 +5,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { formatPriceFromEur } from "@/lib/currency";
 import type { Order, OrderStatus } from "@/lib/types/order";
+import { useLanguage } from "@/lib/i18n/language-context";
 import {
   Eye,
   PackageCheck,
   RefreshCw,
   Search,
   ShoppingBag,
+  XCircle,
 } from "lucide-react";
-
-const statusLabel: Record<OrderStatus, string> = {
-  new: "Yeni",
-  seen: "Görüldü",
-  approved: "Onaylandı",
-};
 
 const statusClass: Record<OrderStatus, string> = {
   new: "bg-red-50 text-red-700 ring-red-100",
   seen: "bg-amber-50 text-amber-700 ring-amber-100",
   approved: "bg-green-50 text-green-700 ring-green-100",
+  cancelled: "bg-slate-100 text-slate-600 ring-slate-200",
 };
 
 type StatusFilter = "all" | OrderStatus;
@@ -42,6 +39,7 @@ function daysAgo(n: number) {
 
 export default function OrderList() {
   const pathname = usePathname();
+  const { t, locale } = useLanguage();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -49,6 +47,16 @@ export default function OrderList() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [query, setQuery] = useState("");
+
+  const statusLabel: Record<OrderStatus, string> = {
+    new: t.admin.orderStatusNew,
+    seen: t.admin.orderStatusSeen,
+    approved: t.admin.orderStatusApproved,
+    cancelled: t.admin.orderStatusCancelled,
+  };
+
+  const dateLocale =
+    locale === "en" ? "en-GB" : locale === "sq" ? "sq-AL" : "tr-TR";
 
   const loadOrders = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -61,22 +69,20 @@ export default function OrderList() {
         headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
       });
       if (!res.ok) {
-        if (!silent) setError("Siparişler yüklenemedi");
+        if (!silent) setError(t.admin.orderLoadError);
         return;
       }
       const data = await res.json();
       if (!Array.isArray(data)) {
-        if (!silent) setError("Siparişler yüklenemedi");
+        if (!silent) setError(t.admin.orderLoadError);
         return;
       }
 
       setOrders((prev) => {
-        // Sessiz yenilemede boş liste gelirse (soğuk instance) mevcut listeyi silme
         if (silent && data.length === 0 && prev.length > 0) {
           return prev;
         }
 
-        // ID bazlı birleştir — daha yeni kayıt kazansın
         if (silent && prev.length > 0) {
           const map = new Map<string, Order>();
           for (const o of prev) map.set(o.id, o);
@@ -99,12 +105,12 @@ export default function OrderList() {
         return data as Order[];
       });
     } catch {
-      if (!silent) setError("Siparişler yüklenemedi (ağ hatası)");
+      if (!silent) setError(t.admin.orderLoadError);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [t.admin.orderLoadError]);
 
   useEffect(() => {
     if (!pathname.startsWith("/admin/orders")) return;
@@ -170,11 +176,12 @@ export default function OrderList() {
       new: orders.filter((o) => o.status === "new").length,
       seen: orders.filter((o) => o.status === "seen").length,
       approved: orders.filter((o) => o.status === "approved").length,
+      cancelled: orders.filter((o) => o.status === "cancelled").length,
     };
   }, [orders]);
 
   if (loading) {
-    return <p className="text-sm text-slate-500">Siparişler yükleniyor…</p>;
+    return <p className="text-sm text-slate-500">{t.admin.orderLoading}</p>;
   }
 
   return (
@@ -185,7 +192,7 @@ export default function OrderList() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ara: sipariş no, müşteri, telefon, e-posta, ürün…"
+            placeholder={t.admin.orderSearch}
             className="w-full rounded-lg border border-slate-200 py-2.5 pl-10 pr-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
           />
         </div>
@@ -198,17 +205,18 @@ export default function OrderList() {
           <RefreshCw
             className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
           />
-          Yenile
+          {t.admin.orderRefresh}
         </button>
       </div>
 
       <div className="flex flex-wrap gap-2">
         {(
           [
-            ["all", "Tümü"],
-            ["new", "Yeni"],
-            ["seen", "Görüldü"],
-            ["approved", "Onaylandı"],
+            ["all", t.admin.orderFilterAll],
+            ["new", t.admin.orderStatusNew],
+            ["seen", t.admin.orderStatusSeen],
+            ["approved", t.admin.orderStatusApproved],
+            ["cancelled", t.admin.orderStatusCancelled],
           ] as const
         ).map(([key, label]) => (
           <button
@@ -230,10 +238,10 @@ export default function OrderList() {
       <div className="flex flex-wrap gap-2">
         {(
           [
-            ["all", "Tüm tarihler"],
-            ["today", "Bugün"],
-            ["week", "Son 7 gün"],
-            ["month", "Son 30 gün"],
+            ["all", t.admin.orderDateAll],
+            ["today", t.admin.orderDateToday],
+            ["week", t.admin.orderDateWeek],
+            ["month", t.admin.orderDateMonth],
           ] as const
         ).map(([key, label]) => (
           <button
@@ -258,17 +266,15 @@ export default function OrderList() {
       )}
 
       <p className="text-xs text-slate-400">
-        {filtered.length} / {orders.length} sipariş gösteriliyor
-        {refreshing ? " · güncelleniyor…" : ""}
+        {filtered.length} / {orders.length} {t.admin.orderShowing}
+        {refreshing ? ` · ${t.admin.orderUpdating}` : ""}
       </p>
 
       {filtered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-200 bg-white px-6 py-16 text-center">
           <ShoppingBag className="mx-auto h-10 w-10 text-slate-300" />
           <p className="mt-3 text-sm text-slate-500">
-            {orders.length === 0
-              ? "Henüz sipariş yok."
-              : "Filtrelere uyan sipariş bulunamadı."}
+            {orders.length === 0 ? t.admin.orderEmpty : t.admin.orderNoMatch}
           </p>
           {(query || statusFilter !== "all" || dateFilter !== "all") && (
             <button
@@ -280,7 +286,7 @@ export default function OrderList() {
               }}
               className="mt-3 text-sm font-medium text-brand hover:underline"
             >
-              Filtreleri temizle
+              {t.admin.orderClearFilters}
             </button>
           )}
         </div>
@@ -289,11 +295,13 @@ export default function OrderList() {
           <table className="min-w-full text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
               <tr>
-                <th className="px-4 py-3 font-medium">Sipariş</th>
-                <th className="px-4 py-3 font-medium">Müşteri</th>
-                <th className="px-4 py-3 font-medium">Tutar</th>
-                <th className="px-4 py-3 font-medium">Durum</th>
-                <th className="px-4 py-3 font-medium">Tarih</th>
+                <th className="px-4 py-3 font-medium">{t.admin.orderColOrder}</th>
+                <th className="px-4 py-3 font-medium">
+                  {t.admin.orderColCustomer}
+                </th>
+                <th className="px-4 py-3 font-medium">{t.admin.orderColAmount}</th>
+                <th className="px-4 py-3 font-medium">{t.admin.orderColStatus}</th>
+                <th className="px-4 py-3 font-medium">{t.admin.orderColDate}</th>
                 <th className="px-4 py-3 font-medium" />
               </tr>
             </thead>
@@ -306,7 +314,7 @@ export default function OrderList() {
                   <td className="px-4 py-3 font-semibold text-slate-800">
                     {order.id}
                     <p className="text-xs font-normal text-slate-400">
-                      {order.items.length} kalem
+                      {order.items.length} {t.admin.orderItems}
                     </p>
                   </td>
                   <td className="px-4 py-3">
@@ -333,19 +341,21 @@ export default function OrderList() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-slate-500">
-                    {new Date(order.createdAt).toLocaleString("tr-TR")}
+                    {new Date(order.createdAt).toLocaleString(dateLocale)}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
                       href={`/admin/orders/${order.id}`}
                       className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
                     >
-                      {order.status === "new" ? (
+                      {order.status === "cancelled" ? (
+                        <XCircle className="h-3.5 w-3.5" />
+                      ) : order.status === "new" ? (
                         <Eye className="h-3.5 w-3.5" />
                       ) : (
                         <PackageCheck className="h-3.5 w-3.5" />
                       )}
-                      Detay
+                      {t.admin.orderDetail}
                     </Link>
                   </td>
                 </tr>

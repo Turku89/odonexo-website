@@ -2,6 +2,7 @@ import type { Order, OrderItem, OrderStatus } from "@/lib/types/order";
 
 export function normalizeOrderStatus(status?: string): OrderStatus {
   if (status === "approved" || status === "completed") return "approved";
+  if (status === "cancelled" || status === "canceled") return "cancelled";
   if (status === "seen") return "seen";
   return "new";
 }

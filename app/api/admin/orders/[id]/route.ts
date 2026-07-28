@@ -37,7 +37,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
   if (body.status !== undefined) {
     const status = normalizeOrderStatus(body.status);
-    if (!["new", "seen", "approved"].includes(status)) {
+    if (!["new", "seen", "approved", "cancelled"].includes(status)) {
       return NextResponse.json({ error: "Geçersiz durum" }, { status: 400 });
     }
     patch.status = status;

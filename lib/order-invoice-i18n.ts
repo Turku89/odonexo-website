@@ -9,6 +9,7 @@ type InvoiceLabels = {
   statusNew: string;
   statusSeen: string;
   statusApproved: string;
+  statusCancelled: string;
   customerInfo: string;
   fullName: string;
   phone: string;
@@ -38,6 +39,7 @@ const LABELS: Record<OrderLocale, InvoiceLabels> = {
     statusNew: "Yeni",
     statusSeen: "İncelendi",
     statusApproved: "Onaylandı",
+    statusCancelled: "İptal",
     customerInfo: "MÜŞTERİ",
     fullName: "Ad Soyad",
     phone: "Telefon",
@@ -55,7 +57,7 @@ const LABELS: Record<OrderLocale, InvoiceLabels> = {
     shipping: "Kargo",
     free: "Ücretsiz",
     grandTotal: "TOPLAM",
-    footerNote: "Otomatik oluşturulmuştur · odonexo.com",
+    footerNote: "odonexo.com",
     dateLocale: "tr-TR",
   },
   sq: {
@@ -65,6 +67,7 @@ const LABELS: Record<OrderLocale, InvoiceLabels> = {
     statusNew: "E re",
     statusSeen: "E parë",
     statusApproved: "E aprovuar",
+    statusCancelled: "Anuluar",
     customerInfo: "KLIENTI",
     fullName: "Emri",
     phone: "Telefoni",
@@ -82,7 +85,7 @@ const LABELS: Record<OrderLocale, InvoiceLabels> = {
     shipping: "Transporti",
     free: "Falas",
     grandTotal: "TOTALI",
-    footerNote: "Gjeneruar automatikisht · odonexo.com",
+    footerNote: "odonexo.com",
     dateLocale: "sq-AL",
   },
   en: {
@@ -92,6 +95,7 @@ const LABELS: Record<OrderLocale, InvoiceLabels> = {
     statusNew: "New",
     statusSeen: "Seen",
     statusApproved: "Approved",
+    statusCancelled: "Cancelled",
     customerInfo: "CUSTOMER",
     fullName: "Name",
     phone: "Phone",
@@ -109,7 +113,7 @@ const LABELS: Record<OrderLocale, InvoiceLabels> = {
     shipping: "Shipping",
     free: "Free",
     grandTotal: "TOTAL",
-    footerNote: "Automatically generated · odonexo.com",
+    footerNote: "odonexo.com",
     dateLocale: "en-GB",
   },
 };
