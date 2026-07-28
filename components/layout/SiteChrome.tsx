@@ -13,9 +13,9 @@ function PageLogoBackground() {
       <div
         className="absolute inset-0 bg-center bg-no-repeat"
         style={{
-          backgroundImage: "url('/logo-mavi.png')",
-          backgroundSize: "min(100vw, 1500px)",
-          opacity: 0.12,
+          backgroundImage: "url('/logo-header.jpg')",
+          backgroundSize: "min(90vw, 1100px)",
+          opacity: 0.07,
         }}
       />
       <div className="absolute inset-0 bg-slate-50/45" />

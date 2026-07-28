@@ -48,13 +48,13 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-16">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div>
-            <Link href="/" className="inline-block mb-4">
+            <Link href="/" className="mb-5 inline-flex items-center">
               <Image
-                src="/logo-beyaz.png"
+                src="/logo-mavi.png"
                 alt="odonexo.com"
-                width={260}
-                height={72}
-                className="h-16 w-auto max-w-[220px] object-contain object-left"
+                width={480}
+                height={160}
+                className="h-20 w-auto max-w-[280px] object-contain object-left sm:h-24 sm:max-w-[340px] md:h-28 md:max-w-[400px]"
               />
             </Link>
             <p className="text-sm text-slate-300 leading-relaxed">

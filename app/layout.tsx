@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: "%s | odonexo.com",
   },
   description:
-    "Diş laboratuvarları için kaliteli malzeme tedarikçisi. Seramik, alçı, akrilik, freze ve laboratuvar ekipmanları. Quality Supplies for Better Smiles.",
+    "Diş laboratuvarları için kaliteli malzeme tedarikçisi. Seramik, alçı, akrilik, freze ve laboratuvar ekipmanları. Quality Solutions For Stress-Free Dentistry.",
   keywords: [
     "diş laboratuvar malzemeleri",
     "dental lab supplies",
@@ -30,8 +30,8 @@ export const metadata: Metadata = {
     "odonexo",
   ],
   icons: {
-    icon: "/logo-mavi.png",
-    apple: "/logo-mavi.png",
+    icon: "/logo-header.jpg",
+    apple: "/logo-header.jpg",
   },
 };
 

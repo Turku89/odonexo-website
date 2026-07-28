@@ -21,7 +21,7 @@ const tr = {
   },
   footer: {
     description:
-      "Diş laboratuvarları için kaliteli malzeme tedarikçisi. Quality Supplies for Better Smiles.",
+      "Diş laboratuvarları için kaliteli malzeme tedarikçisi. Quality Solutions For Stress-Free Dentistry.",
     categories: "Kategoriler",
     corporate: "Kurumsal",
     shipping: "Kargo & Teslimat",
@@ -165,7 +165,7 @@ const tr = {
   about: {
     title: "Hakkımızda",
     subtitle:
-      "Quality Supplies for Better Smiles — Diş laboratuvarları için güvenilir malzeme tedarikçisi",
+      "Quality Solutions For Stress-Free Dentistry — Diş laboratuvarları için güvenilir malzeme tedarikçisi",
     whoTitle: "Biz Kimiz?",
     whoP1:
       "Biz 35 yıllık laboratuvar ve klinik işletme tecrübesiyle en çok zorluk çektiğimiz konuya el attık. Laboratuvar ve kliniklerin, ne kadar uzman olsalar da, sarf malzeme ve makinelerde çıkan beklenmedik arızalardan ciddi sorunlar yaşadık. Hele ki mesele Arnavutluk olduğunda bu tür sorunları çözecek vaktiniz de olmaz. Dolayısıyla bir CAD/CAM gerekirken ikincisini yedekte tutmamız, kompresör veya malzeme stokta bulundurmamız gerekti. Anında servis alamadığımız cihazlar; malzemelerde sürekliliği olmayan ya da az giden malzemeleri bulamamak gibi sorunlar çok stres yarattı.",
@@ -261,7 +261,7 @@ const sq = {
   },
   footer: {
     description:
-      "Furnizues cilësor i materialeve për laboratorë dentarë. Quality Supplies for Better Smiles.",
+      "Furnizues cilësor i materialeve për laboratorë dentarë. Quality Solutions For Stress-Free Dentistry.",
     categories: "Kategoritë",
     corporate: "Korporata",
     shipping: "Transporti & Dorëzimi",
@@ -405,7 +405,7 @@ const sq = {
   about: {
     title: "Rreth Nesh",
     subtitle:
-      "Quality Supplies for Better Smiles — Furnizues i besueshëm i materialeve për laboratorë dentarë",
+      "Quality Solutions For Stress-Free Dentistry — Furnizues i besueshëm i materialeve për laboratorë dentarë",
     whoTitle: "Kush Jemi Ne?",
     whoP1:
       "Me 35 vite përvojë në drejtimin e laboratorëve dhe klinikave, i kushtuam vëmendje problematikës që na ka shqetësuar më shumë. Edhe laboratorët dhe klinikat më të specializuara hasin vështirësi të mëdha nga defektet e papritura të materialeve dhe makinerive. Kur çështja është në Shqipëri, shpesh nuk mbetet kohë për t'i zgjidhur. Prandaj na është dashur të mbajmë një CAD/CAM rezervë, kompresor ose materiale në stok. Pajisjet pa servis të menjëhershëm dhe mungesa e materialeve me vazhdimësi kanë krijuar shumë stres.",

@@ -34,14 +34,17 @@ export default function Header() {
       </div>
 
       <div className="mx-auto max-w-7xl px-4">
-        <div className="flex h-20 md:h-24 items-center justify-between gap-4">
-          <Link href="/" className="flex-shrink-0">
+        <div className="flex h-24 md:h-28 items-center justify-between gap-4">
+          <Link
+            href="/"
+            className="flex h-full flex-shrink-0 items-center py-2.5"
+          >
             <Image
-              src="/logo-mavi.png"
-              alt="odonexo.com - Quality Supplies for Better Smiles"
-              width={320}
-              height={90}
-              className="h-14 md:h-16 w-auto object-contain object-left"
+              src="/logo-header.jpg"
+              alt="odonexo.com - Quality Solutions For Stress-Free Dentistry"
+              width={560}
+              height={140}
+              className="h-16 w-auto max-w-[300px] object-contain object-left sm:h-[4.5rem] sm:max-w-[380px] md:h-20 md:max-w-[460px]"
               priority
             />
           </Link>

@@ -83,11 +83,11 @@ export default function Hero({ stats }: HeroProps) {
 
           <div className="flex items-center justify-center lg:col-span-5 lg:justify-end">
             <Image
-              src="/logo-beyaz.png"
+              src="/logo-mavi.png"
               alt="odonexo.com"
               width={480}
               height={220}
-              className="h-auto w-full max-w-[260px] sm:max-w-[300px] lg:max-w-[360px]"
+              className="h-auto w-full max-w-[280px] object-contain sm:max-w-[320px] lg:max-w-[380px]"
               priority
             />
           </div>
