@@ -1,19 +1,41 @@
 import AdminShell from "@/components/admin/AdminShell";
 import { readAllProducts } from "@/lib/products-store";
+import { countNewOrders, readAllOrders } from "@/lib/orders-store";
 import { formatPriceFromEur } from "@/lib/currency";
 import { isOnSale } from "@/lib/admin-product-filters";
-import { Package, Eye, AlertTriangle, Tag } from "lucide-react";
+import { Package, Eye, AlertTriangle, Tag, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 
 export default async function AdminDashboardPage() {
-  const products = await readAllProducts();
+  const [products, orders, newOrders] = await Promise.all([
+    readAllProducts(),
+    readAllOrders(),
+    countNewOrders(),
+  ]);
 
   const published = products.filter((p) => p.published).length;
   const outOfStock = products.filter((p) => !p.inStock).length;
   const onSale = products.filter(isOnSale).length;
-  const totalValue = products.reduce((sum, p) => sum + p.price * (p.stockQuantity || 0), 0);
+  const totalValue = products.reduce(
+    (sum, p) => sum + p.price * (p.stockQuantity || 0),
+    0
+  );
 
   const stats = [
+    {
+      label: "Yeni Sipariş",
+      value: newOrders,
+      icon: ShoppingBag,
+      color: "bg-red-50 text-red-600",
+      href: "/admin/orders",
+    },
+    {
+      label: "Toplam Sipariş",
+      value: orders.length,
+      icon: ShoppingBag,
+      color: "bg-indigo-50 text-indigo-600",
+      href: "/admin/orders",
+    },
     {
       label: "Toplam Ürün",
       value: products.length,
@@ -46,9 +68,9 @@ export default async function AdminDashboardPage() {
 
   return (
     <AdminShell>
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Panel Özeti</h1>
+      <h1 className="mb-6 text-2xl font-bold text-slate-900">Panel Özeti</h1>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map(({ label, value, icon: Icon, color, href }) => (
           <Link
             key={label}
@@ -66,11 +88,18 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6">
-        <h2 className="font-semibold text-slate-800 mb-4">Hızlı İşlemler</h2>
+        <h2 className="mb-4 font-semibold text-slate-800">Hızlı İşlemler</h2>
         <div className="flex flex-wrap gap-3">
           <Link
-            href="/admin/products/new"
+            href="/admin/orders"
             className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
+          >
+            Gelen Siparişler
+            {newOrders > 0 ? ` (${newOrders} yeni)` : ""}
+          </Link>
+          <Link
+            href="/admin/products/new"
+            className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
             + Yeni Ürün Ekle
           </Link>
@@ -79,12 +108,6 @@ export default async function AdminDashboardPage() {
             className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
             Tüm Ürünleri Yönet
-          </Link>
-          <Link
-            href="/admin/categories/new"
-            className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            + Yeni Kategori
           </Link>
           <Link
             href="/admin/categories"
@@ -100,8 +123,7 @@ export default async function AdminDashboardPage() {
           </Link>
         </div>
         <p className="mt-4 text-sm text-slate-500">
-          Tahmini stok değeri:{" "}
-          <strong>{formatPriceFromEur(totalValue)}</strong>
+          Tahmini stok değeri: <strong>{formatPriceFromEur(totalValue)}</strong>
         </p>
       </div>
     </AdminShell>

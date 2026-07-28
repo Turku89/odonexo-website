@@ -72,6 +72,7 @@ export async function POST(request: Request) {
     shippingEur,
     totalEur,
     currency: "EUR",
+    status: "new",
     createdAt: new Date().toISOString(),
   };
 

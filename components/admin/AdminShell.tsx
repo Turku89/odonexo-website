@@ -10,10 +10,13 @@ import {
   LogOut,
   ExternalLink,
   Plus,
+  ShoppingBag,
 } from "lucide-react";
+import OrderNotifications from "@/components/admin/OrderNotifications";
 
 const nav = [
   { href: "/admin", label: "Panel", icon: LayoutDashboard },
+  { href: "/admin/orders", label: "Gelen Siparişler", icon: ShoppingBag },
   { href: "/admin/products", label: "Ürünler", icon: Package },
   { href: "/admin/categories", label: "Kategoriler", icon: FolderOpen },
   { href: "/admin/settings", label: "Ayarlar", icon: Phone },
@@ -85,7 +88,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             <div className="md:hidden">
               <p className="font-bold text-slate-900">odonexo Admin</p>
             </div>
-            <nav className="flex flex-1 items-center gap-1 md:hidden">
+            <nav className="hidden flex-1 items-center gap-1 overflow-x-auto md:hidden">
               {nav.map(({ href, label, icon: Icon }) => {
                 const active =
                   href === "/admin"
@@ -108,6 +111,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               })}
             </nav>
             <div className="ml-auto flex items-center gap-2">
+              <OrderNotifications />
               {pathname.startsWith("/admin/categories") ? (
                 <Link
                   href="/admin/categories/new"
@@ -116,7 +120,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                   <Plus className="h-4 w-4" />
                   <span className="hidden sm:inline">Yeni Kategori</span>
                 </Link>
-              ) : (
+              ) : pathname.startsWith("/admin/orders") ? null : (
                 <Link
                   href="/admin/products/new"
                   className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
@@ -127,6 +131,28 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               )}
             </div>
           </div>
+          <nav className="mt-3 flex gap-1 overflow-x-auto md:hidden">
+            {nav.map(({ href, label, icon: Icon }) => {
+              const active =
+                href === "/admin"
+                  ? pathname === "/admin"
+                  : pathname.startsWith(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium ${
+                    active
+                      ? "bg-brand text-white"
+                      : "text-slate-600 hover:bg-slate-100"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </Link>
+              );
+            })}
+          </nav>
         </header>
 
         <main className="flex-1 p-4 md:p-8">{children}</main>

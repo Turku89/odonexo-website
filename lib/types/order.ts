@@ -1,3 +1,5 @@
+export type OrderStatus = "new" | "seen" | "completed";
+
 export interface OrderItem {
   productId: string;
   name: string;
@@ -19,7 +21,9 @@ export interface Order {
   shippingEur: number;
   totalEur: number;
   currency: "EUR";
+  status: OrderStatus;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface CheckoutInput {
