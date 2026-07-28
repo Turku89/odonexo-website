@@ -37,7 +37,7 @@ export default function Header() {
         <div className="flex h-20 md:h-24 items-center justify-between gap-4">
           <Link href="/" className="flex-shrink-0">
             <Image
-              src="/logo.png"
+              src="/logo-mavi.png"
               alt="odonexo.com - Quality Supplies for Better Smiles"
               width={320}
               height={90}

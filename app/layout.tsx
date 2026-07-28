@@ -29,6 +29,10 @@ export const metadata: Metadata = {
     "akrilik",
     "odonexo",
   ],
+  icons: {
+    icon: "/logo-mavi.png",
+    apple: "/logo-mavi.png",
+  },
 };
 
 export default async function RootLayout({
