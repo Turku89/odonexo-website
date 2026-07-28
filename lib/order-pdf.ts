@@ -3,13 +3,14 @@ import path from "path";
 import fs from "fs";
 import type { Order } from "@/lib/types/order";
 import { formatPriceFromEur } from "@/lib/currency";
+import { getInvoiceLabels, normalizeOrderLocale } from "@/lib/order-invoice-i18n";
 
 const BRAND = "#1a408f";
 const BRAND_LIGHT = "#2563eb";
 const SLATE = "#334155";
 const MUTED = "#64748b";
 const LINE = "#e2e8f0";
-const PAGE_MARGIN = 48;
+const MARGIN = 32;
 
 function resolveFont(file: string): string | null {
   const candidates = [
@@ -39,19 +40,24 @@ function resolveLogo(): string | null {
   return null;
 }
 
+/** Kompakt tek sayfa sipariş faturası (kalem sayısı çoksa gerekirse 2. sayfa). */
 export async function buildOrderPdf(order: Order): Promise<Buffer> {
   const regularFont = resolveFont("arial.ttf");
   const boldFont = resolveFont("arial-bold.ttf") || regularFont;
   const logoPath = resolveLogo();
+  const locale = normalizeOrderLocale(order.locale);
+  const L = getInvoiceLabels(locale);
 
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({
-      margin: PAGE_MARGIN,
+      margin: MARGIN,
       size: "A4",
+      autoFirstPage: true,
+      bufferPages: true,
       info: {
-        Title: `Sipariş ${order.id}`,
+        Title: `${L.title} ${order.id}`,
         Author: "odonexo.com",
-        Subject: "Sipariş fişi",
+        Subject: L.subject,
       },
     });
     const chunks: Buffer[] = [];
@@ -68,313 +74,314 @@ export async function buildOrderPdf(order: Order): Promise<Buffer> {
     };
 
     const fmt = (n: number) => formatPriceFromEur(n);
-    const date = new Date(order.createdAt).toLocaleString("tr-TR", {
-      dateStyle: "long",
+    const date = new Date(order.createdAt).toLocaleString(L.dateLocale, {
+      dateStyle: "medium",
       timeStyle: "short",
     });
     const pageWidth = doc.page.width;
-    const contentWidth = pageWidth - PAGE_MARGIN * 2;
+    const pageHeight = doc.page.height;
+    const contentWidth = pageWidth - MARGIN * 2;
+    const footerReserve = 42;
 
-    /* —— Üst marka şeridi —— */
-    doc.rect(0, 0, pageWidth, 8).fill(BRAND);
+    const ensureSpace = (needed: number) => {
+      if (doc.y + needed > pageHeight - footerReserve) {
+        doc.addPage();
+        doc.rect(0, 0, pageWidth, 5).fill(BRAND);
+        doc.y = MARGIN + 8;
+      }
+    };
 
-    /* —— Logo + başlık —— */
-    let headerBottom = 36;
+    /* Üst şerit */
+    doc.rect(0, 0, pageWidth, 5).fill(BRAND);
+
+    /* Logo + başlık (kompakt) */
+    let y = 14;
     if (logoPath) {
       try {
-        doc.image(logoPath, PAGE_MARGIN, 28, {
-          fit: [160, 52],
-        });
+        doc.image(logoPath, MARGIN, y, { fit: [110, 32] });
       } catch {
-        /* logo yoksa metin kullan */
+        /* ignore */
       }
     }
 
     useBold();
     doc
       .fillColor(BRAND)
-      .fontSize(11)
-      .text("SİPARİŞ FİŞİ", PAGE_MARGIN + 180, 32, {
-        width: contentWidth - 180,
+      .fontSize(12)
+      .text(L.title, MARGIN + 120, y + 2, {
+        width: contentWidth - 120,
         align: "right",
       });
     useRegular();
     doc
       .fillColor(MUTED)
-      .fontSize(9)
-      .text("Quality Solutions For Stress-Free Dentistry", PAGE_MARGIN + 180, 48, {
-        width: contentWidth - 180,
+      .fontSize(7)
+      .text("odonexo.com", MARGIN + 120, y + 18, {
+        width: contentWidth - 120,
         align: "right",
       });
 
-    headerBottom = 92;
+    y = 52;
     doc
-      .moveTo(PAGE_MARGIN, headerBottom)
-      .lineTo(pageWidth - PAGE_MARGIN, headerBottom)
+      .moveTo(MARGIN, y)
+      .lineTo(pageWidth - MARGIN, y)
       .strokeColor(LINE)
-      .lineWidth(1)
+      .lineWidth(0.8)
       .stroke();
 
-    /* —— Sipariş meta —— */
-    let y = headerBottom + 18;
+    /* Sipariş no + tarih + durum */
+    y += 10;
     useBold();
-    doc.fillColor(BRAND).fontSize(16).text(order.id, PAGE_MARGIN, y);
+    doc.fillColor(BRAND).fontSize(13).text(order.id, MARGIN, y);
     useRegular();
-    doc
-      .fillColor(MUTED)
-      .fontSize(10)
-      .text(date, PAGE_MARGIN, y + 22);
+    doc.fillColor(MUTED).fontSize(8).text(date, MARGIN, y + 16);
 
-    doc
-      .roundedRect(pageWidth - PAGE_MARGIN - 110, y, 110, 36, 6)
-      .fill("#eff6ff");
+    const statusLabel =
+      order.status === "approved"
+        ? L.statusApproved
+        : order.status === "seen"
+          ? L.statusSeen
+          : L.statusNew;
+
+    doc.roundedRect(pageWidth - MARGIN - 88, y, 88, 28, 4).fill("#eff6ff");
     useBold();
     doc
       .fillColor(BRAND_LIGHT)
-      .fontSize(10)
-      .text("DURUM", pageWidth - PAGE_MARGIN - 110, y + 8, {
-        width: 110,
+      .fontSize(7)
+      .text(L.status, pageWidth - MARGIN - 88, y + 5, {
+        width: 88,
         align: "center",
       });
     useRegular();
     doc
       .fillColor(BRAND)
-      .fontSize(11)
-      .text(
-        order.status === "approved"
-          ? "Onaylandı"
-          : order.status === "seen"
-            ? "İncelendi"
-            : "Yeni sipariş",
-        pageWidth - PAGE_MARGIN - 110,
-        y + 20,
-        {
-          width: 110,
-          align: "center",
-        }
-      );
+      .fontSize(9)
+      .text(statusLabel, pageWidth - MARGIN - 88, y + 15, {
+        width: 88,
+        align: "center",
+      });
 
-    y += 58;
+    y += 40;
 
-    /* —— Müşteri kutusu —— */
-    const boxTop = y;
-    doc.roundedRect(PAGE_MARGIN, boxTop, contentWidth, 108, 8).fill("#f8fafc");
-    doc
-      .roundedRect(PAGE_MARGIN, boxTop, 4, 108, 2)
-      .fill(BRAND);
+    /* Müşteri — tek satırlık kompakt blok */
+    const addressPreview =
+      order.customerAddress.length > 70
+        ? `${order.customerAddress.slice(0, 67)}…`
+        : order.customerAddress;
+    const customerBlockH = order.notes ? 78 : 58;
+
+    ensureSpace(customerBlockH + 20);
+    y = doc.y;
+    doc.roundedRect(MARGIN, y, contentWidth, customerBlockH, 5).fill("#f8fafc");
+    doc.roundedRect(MARGIN, y, 3, customerBlockH, 1).fill(BRAND);
 
     useBold();
     doc
       .fillColor(BRAND)
-      .fontSize(11)
-      .text("MÜŞTERİ BİLGİLERİ", PAGE_MARGIN + 16, boxTop + 12);
+      .fontSize(8)
+      .text(L.customerInfo, MARGIN + 10, y + 6);
 
     useRegular();
-    const leftX = PAGE_MARGIN + 16;
-    const rightX = PAGE_MARGIN + contentWidth / 2 + 8;
-    let rowY = boxTop + 34;
+    const colW = contentWidth / 2 - 18;
+    const leftX = MARGIN + 10;
+    const rightX = MARGIN + contentWidth / 2 + 4;
 
-    const labelValue = (
-      lx: number,
-      ly: number,
-      label: string,
-      value: string,
-      width: number
-    ) => {
+    const field = (x: number, fy: number, label: string, value: string, w: number) => {
       useBold();
-      doc.fillColor(MUTED).fontSize(8).text(label.toUpperCase(), lx, ly, {
-        width,
-      });
+      doc.fillColor(MUTED).fontSize(6.5).text(label.toUpperCase(), x, fy, { width: w });
       useRegular();
-      doc.fillColor(SLATE).fontSize(10).text(value || "—", lx, ly + 12, {
-        width,
+      doc.fillColor(SLATE).fontSize(8).text(value || "—", x, fy + 9, {
+        width: w,
+        height: 12,
+        ellipsis: true,
       });
     };
 
-    labelValue(leftX, rowY, "Ad Soyad", order.customerName, contentWidth / 2 - 28);
-    labelValue(rightX, rowY, "Telefon", order.customerPhone, contentWidth / 2 - 28);
-    rowY += 36;
-    labelValue(
-      leftX,
-      rowY,
-      "E-posta",
-      order.customerEmail || "—",
-      contentWidth / 2 - 28
-    );
-    labelValue(rightX, rowY, "Adres", order.customerAddress, contentWidth / 2 - 28);
-
-    y = boxTop + 120;
+    field(leftX, y + 18, L.fullName, order.customerName, colW);
+    field(rightX, y + 18, L.phone, order.customerPhone, colW);
+    field(leftX, y + 38, L.email, order.customerEmail || "—", colW);
+    field(rightX, y + 38, L.address, addressPreview, colW);
 
     if (order.notes) {
       useBold();
-      doc.fillColor(MUTED).fontSize(8).text("SİPARİŞ NOTU", PAGE_MARGIN, y);
+      doc.fillColor(MUTED).fontSize(6.5).text(L.orderNote.toUpperCase(), leftX, y + 56);
       useRegular();
-      doc.fillColor(SLATE).fontSize(10).text(order.notes, PAGE_MARGIN, y + 12, {
-        width: contentWidth,
-      });
-      y = doc.y + 16;
-    } else {
-      y += 8;
+      doc
+        .fillColor(SLATE)
+        .fontSize(7.5)
+        .text(order.notes, leftX, y + 65, {
+          width: contentWidth - 20,
+          height: 10,
+          ellipsis: true,
+        });
     }
 
-    /* —— Ürün tablosu —— */
+    y += customerBlockH + 10;
+    doc.y = y;
+
+    /* Tablo başlığı */
+    ensureSpace(40);
+    y = doc.y;
     useBold();
-    doc.fillColor(BRAND).fontSize(11).text("SİPARİŞ KALEMLERİ", PAGE_MARGIN, y);
-    y += 18;
+    doc.fillColor(BRAND).fontSize(8).text(L.lineItems, MARGIN, y);
+    y += 12;
 
     const col = {
-      no: PAGE_MARGIN,
-      name: PAGE_MARGIN + 28,
-      sku: PAGE_MARGIN + 250,
-      qty: PAGE_MARGIN + 340,
-      unit: PAGE_MARGIN + 390,
-      total: PAGE_MARGIN + 460,
+      no: MARGIN,
+      name: MARGIN + 18,
+      sku: MARGIN + 250,
+      qty: MARGIN + 340,
+      unit: MARGIN + 380,
+      total: MARGIN + 445,
     };
 
-    doc.rect(PAGE_MARGIN, y, contentWidth, 24).fill(BRAND);
+    doc.rect(MARGIN, y, contentWidth, 16).fill(BRAND);
     useBold();
-    doc.fillColor("#ffffff").fontSize(8);
-    doc.text("#", col.no + 6, y + 8);
-    doc.text("ÜRÜN", col.name, y + 8);
-    doc.text("SKU", col.sku, y + 8);
-    doc.text("ADET", col.qty, y + 8, { width: 40, align: "right" });
-    doc.text("BİRİM", col.unit, y + 8, { width: 60, align: "right" });
-    doc.text("TUTAR", col.total, y + 8, {
-      width: pageWidth - PAGE_MARGIN - col.total,
+    doc.fillColor("#ffffff").fontSize(7);
+    doc.text("#", col.no + 4, y + 4);
+    doc.text(L.product, col.name, y + 4, { width: 220 });
+    doc.text(L.sku, col.sku, y + 4, { width: 80 });
+    doc.text(L.qty, col.qty, y + 4, { width: 32, align: "right" });
+    doc.text(L.unit, col.unit, y + 4, { width: 55, align: "right" });
+    doc.text(L.amount, col.total, y + 4, {
+      width: pageWidth - MARGIN - col.total,
       align: "right",
     });
-    y += 24;
+    y += 16;
 
     order.items.forEach((item, i) => {
-      const rowH = item.note || item.unavailable ? 40 : 28;
+      const hasExtra = Boolean(item.note || item.unavailable);
+      const rowH = hasExtra ? 26 : 16;
+      ensureSpace(rowH + 4);
+      y = Math.max(y, doc.y);
+
       if (i % 2 === 0) {
-        doc.rect(PAGE_MARGIN, y, contentWidth, rowH).fill("#f8fafc");
+        doc.rect(MARGIN, y, contentWidth, rowH).fill("#f8fafc");
       }
 
+      const nameText = item.unavailable
+        ? `${item.name} (${L.outOfStock})`
+        : item.name;
+
       useRegular();
-      doc.fillColor(MUTED).fontSize(9).text(String(i + 1), col.no + 6, y + 9);
+      doc.fillColor(MUTED).fontSize(7.5).text(String(i + 1), col.no + 4, y + 4);
       doc
         .fillColor(item.unavailable ? "#b91c1c" : SLATE)
-        .fontSize(9)
-        .text(
-          item.unavailable ? `${item.name} (STOKTA YOK)` : item.name,
-          col.name,
-          y + 9,
-          { width: 210, ellipsis: true }
-        );
-      doc.fillColor(MUTED).fontSize(8).text(item.sku, col.sku, y + 10, {
-        width: 80,
+        .fontSize(7.5)
+        .text(nameText, col.name, y + 4, {
+          width: 225,
+          height: 10,
+          ellipsis: true,
+        });
+      doc.fillColor(MUTED).fontSize(7).text(item.sku, col.sku, y + 4, {
+        width: 85,
+        height: 10,
         ellipsis: true,
       });
       doc
         .fillColor(SLATE)
-        .fontSize(9)
-        .text(String(item.quantity), col.qty, y + 9, {
-          width: 40,
+        .fontSize(7.5)
+        .text(String(item.quantity), col.qty, y + 4, {
+          width: 32,
           align: "right",
         });
-      doc.text(fmt(item.unitPriceEur), col.unit, y + 9, {
-        width: 60,
+      doc.text(fmt(item.unitPriceEur), col.unit, y + 4, {
+        width: 55,
         align: "right",
       });
       useBold();
-      doc.fillColor(SLATE).fontSize(9).text(fmt(item.lineTotalEur), col.total, y + 9, {
-        width: pageWidth - PAGE_MARGIN - col.total,
-        align: "right",
-      });
+      doc
+        .fillColor(SLATE)
+        .fontSize(7.5)
+        .text(fmt(item.lineTotalEur), col.total, y + 4, {
+          width: pageWidth - MARGIN - col.total,
+          align: "right",
+        });
 
       if (item.note) {
         useRegular();
         doc
           .fillColor("#b45309")
-          .fontSize(7)
-          .text(item.note, col.name, y + 22, { width: 300 });
+          .fontSize(6.5)
+          .text(item.note, col.name, y + 14, {
+            width: 300,
+            height: 9,
+            ellipsis: true,
+          });
       }
 
       y += rowH;
-
-      if (y > doc.page.height - 160) {
-        doc.addPage();
-        doc.rect(0, 0, pageWidth, 8).fill(BRAND);
-        y = PAGE_MARGIN + 10;
-      }
+      doc.y = y;
     });
 
+    ensureSpace(70);
+    y = Math.max(y, doc.y) + 6;
     doc
-      .moveTo(PAGE_MARGIN, y)
-      .lineTo(pageWidth - PAGE_MARGIN, y)
+      .moveTo(MARGIN, y)
+      .lineTo(pageWidth - MARGIN, y)
       .strokeColor(LINE)
       .stroke();
-    y += 16;
+    y += 8;
 
-    /* —— Toplamlar —— */
-    const totalsWidth = 200;
-    const totalsX = pageWidth - PAGE_MARGIN - totalsWidth;
+    /* Toplamlar */
+    const totalsWidth = 170;
+    const totalsX = pageWidth - MARGIN - totalsWidth;
 
     const drawTotalRow = (
       label: string,
       value: string,
-      opts?: { bold?: boolean; large?: boolean; accent?: boolean }
+      opts?: { bold?: boolean; accent?: boolean }
     ) => {
       if (opts?.bold) useBold();
       else useRegular();
       doc
         .fillColor(opts?.accent ? BRAND : MUTED)
-        .fontSize(opts?.large ? 12 : 10)
-        .text(label, totalsX, y, { width: 100 });
+        .fontSize(opts?.bold ? 10 : 8)
+        .text(label, totalsX, y, { width: 90 });
       doc
         .fillColor(opts?.accent ? BRAND : SLATE)
-        .text(value, totalsX + 100, y, { width: 100, align: "right" });
-      y += opts?.large ? 22 : 18;
+        .text(value, totalsX + 90, y, { width: 80, align: "right" });
+      y += opts?.bold ? 16 : 13;
     };
 
-    drawTotalRow("Ara toplam", fmt(order.subtotalEur));
+    drawTotalRow(L.subtotal, fmt(order.subtotalEur));
     drawTotalRow(
-      "Kargo",
-      order.shippingEur === 0 ? "Ücretsiz" : fmt(order.shippingEur)
+      L.shipping,
+      order.shippingEur === 0 ? L.free : fmt(order.shippingEur)
     );
 
     doc
       .moveTo(totalsX, y)
-      .lineTo(pageWidth - PAGE_MARGIN, y)
+      .lineTo(pageWidth - MARGIN, y)
       .strokeColor(LINE)
       .stroke();
-    y += 10;
+    y += 6;
 
-    doc.roundedRect(totalsX - 8, y - 4, totalsWidth + 8, 32, 6).fill("#eff6ff");
-    drawTotalRow("GENEL TOPLAM", fmt(order.totalEur), {
+    doc.roundedRect(totalsX - 6, y - 2, totalsWidth + 6, 22, 4).fill("#eff6ff");
+    drawTotalRow(L.grandTotal, fmt(order.totalEur), {
       bold: true,
-      large: true,
       accent: true,
     });
 
-    /* —— Alt bilgi —— */
-    const footerY = doc.page.height - 56;
-    doc
-      .moveTo(PAGE_MARGIN, footerY)
-      .lineTo(pageWidth - PAGE_MARGIN, footerY)
-      .strokeColor(LINE)
-      .stroke();
-
-    useRegular();
-    doc
-      .fillColor(MUTED)
-      .fontSize(8)
-      .text(
-        "odonexo.com  ·  Quality Solutions For Stress-Free Dentistry",
-        PAGE_MARGIN,
-        footerY + 12,
-        { width: contentWidth, align: "center" }
-      );
-    doc
-      .fillColor("#94a3b8")
-      .fontSize(7)
-      .text(
-        "Bu belge otomatik oluşturulmuştur. Sipariş onayı için müşteriyle iletişime geçiniz.",
-        PAGE_MARGIN,
-        footerY + 26,
-        { width: contentWidth, align: "center" }
-      );
+    /* Footer — her sayfanın altına */
+    const range = doc.bufferedPageRange();
+    for (let i = 0; i < range.count; i++) {
+      doc.switchToPage(range.start + i);
+      const fy = pageHeight - 28;
+      doc
+        .moveTo(MARGIN, fy)
+        .lineTo(pageWidth - MARGIN, fy)
+        .strokeColor(LINE)
+        .stroke();
+      useRegular();
+      doc
+        .fillColor(MUTED)
+        .fontSize(7)
+        .text(L.footerNote, MARGIN, fy + 8, {
+          width: contentWidth,
+          align: "center",
+        });
+    }
 
     doc.end();
   });

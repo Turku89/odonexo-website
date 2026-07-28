@@ -3,6 +3,8 @@ import { readPublishedProducts } from "@/lib/products-store";
 import { readSiteSettings } from "@/lib/site-settings-store";
 import { saveOrder } from "@/lib/orders-store";
 import { sendTelegramOrderNotification } from "@/lib/telegram-notify";
+import { getProductName } from "@/lib/product-i18n";
+import { normalizeOrderLocale } from "@/lib/order-invoice-i18n";
 import type { CheckoutInput, Order, OrderItem } from "@/lib/types/order";
 
 export async function POST(request: Request) {
@@ -24,6 +26,8 @@ export async function POST(request: Request) {
   if (!Array.isArray(body.items) || body.items.length === 0) {
     return NextResponse.json({ error: "Sepet boş" }, { status: 400 });
   }
+
+  const locale = normalizeOrderLocale(body.locale);
 
   const [products, settings] = await Promise.all([
     readPublishedProducts(),
@@ -47,7 +51,7 @@ export async function POST(request: Request) {
     const unitPriceEur = product.price;
     orderItems.push({
       productId: product.id,
-      name: product.name,
+      name: getProductName(product, locale),
       sku: product.sku,
       quantity,
       unitPriceEur,
@@ -73,6 +77,7 @@ export async function POST(request: Request) {
     totalEur,
     currency: "EUR",
     status: "new",
+    locale,
     createdAt: new Date().toISOString(),
   };
 

@@ -3,6 +3,7 @@ import type { Order } from "@/lib/types/order";
 import type { SiteSettings } from "@/lib/types/site-settings";
 import { buildOrderPdf } from "@/lib/order-pdf";
 import { formatPriceFromEur } from "@/lib/currency";
+import { getInvoiceLabels, normalizeOrderLocale } from "@/lib/order-invoice-i18n";
 
 function resolveSmtp(settings: SiteSettings) {
   return {
@@ -17,6 +18,42 @@ function resolveSmtp(settings: SiteSettings) {
       "",
   };
 }
+
+const EMAIL_COPY = {
+  tr: {
+    greeting: (name: string) => `Sayın ${name},`,
+    approved: "odonexo.com siparişiniz onaylandı.",
+    orderNo: "Sipariş No",
+    products: "Ürünler",
+    outOfStock: "STOKTA YOK / İPTAL",
+    note: "Notumuz",
+    pdfAttached: "Sipariş fişiniz PDF olarak ekte yer almaktadır.",
+    thanks: "Teşekkür ederiz,",
+    subject: (id: string) => `Siparişiniz onaylandı — ${id}`,
+  },
+  sq: {
+    greeting: (name: string) => `I/e nderuar ${name},`,
+    approved: "Porosia juaj në odonexo.com u aprovua.",
+    orderNo: "Nr. i porosisë",
+    products: "Produktet",
+    outOfStock: "JASHTË STOKU / ANULUAR",
+    note: "Shënimi ynë",
+    pdfAttached: "Fatura e porosisë është bashkëngjitur si PDF.",
+    thanks: "Faleminderit,",
+    subject: (id: string) => `Porosia u aprovua — ${id}`,
+  },
+  en: {
+    greeting: (name: string) => `Dear ${name},`,
+    approved: "Your odonexo.com order has been approved.",
+    orderNo: "Order No",
+    products: "Products",
+    outOfStock: "OUT OF STOCK / CANCELLED",
+    note: "Our note",
+    pdfAttached: "Your order invoice is attached as a PDF.",
+    thanks: "Thank you,",
+    subject: (id: string) => `Your order has been approved — ${id}`,
+  },
+} as const;
 
 export async function sendOrderApprovalEmail(
   order: Order,
@@ -37,6 +74,9 @@ export async function sendOrderApprovalEmail(
   }
 
   try {
+    const locale = normalizeOrderLocale(order.locale);
+    const L = getInvoiceLabels(locale);
+    const copy = EMAIL_COPY[locale];
     const pdf = await buildOrderPdf(order);
     const transporter = nodemailer.createTransport({
       host: smtp.host,
@@ -48,30 +88,30 @@ export async function sendOrderApprovalEmail(
     const itemLines = order.items
       .map((item) => {
         if (item.unavailable || item.quantity <= 0) {
-          return `• ${item.name} — STOKTA YOK / İPTAL${item.note ? ` (${item.note})` : ""}`;
+          return `• ${item.name} — ${copy.outOfStock}${item.note ? ` (${item.note})` : ""}`;
         }
         return `• ${item.name} x${item.quantity} — ${formatPriceFromEur(item.lineTotalEur)}${item.note ? ` (${item.note})` : ""}`;
       })
       .join("\n");
 
     const text = [
-      `Sayın ${order.customerName},`,
+      copy.greeting(order.customerName),
       "",
-      `odonexo.com siparişiniz onaylandı.`,
-      `Sipariş No: ${order.id}`,
+      copy.approved,
+      `${copy.orderNo}: ${order.id}`,
       "",
-      "Ürünler:",
+      `${copy.products}:`,
       itemLines,
       "",
-      `Ara toplam: ${formatPriceFromEur(order.subtotalEur)}`,
-      `Kargo: ${order.shippingEur === 0 ? "Ücretsiz" : formatPriceFromEur(order.shippingEur)}`,
-      `Toplam: ${formatPriceFromEur(order.totalEur)}`,
+      `${L.subtotal}: ${formatPriceFromEur(order.subtotalEur)}`,
+      `${L.shipping}: ${order.shippingEur === 0 ? L.free : formatPriceFromEur(order.shippingEur)}`,
+      `${L.grandTotal}: ${formatPriceFromEur(order.totalEur)}`,
       "",
-      order.adminNote ? `Notumuz: ${order.adminNote}` : "",
+      order.adminNote ? `${copy.note}: ${order.adminNote}` : "",
       "",
-      "Sipariş fişiniz PDF olarak ekte yer almaktadır.",
+      copy.pdfAttached,
       "",
-      "Teşekkür ederiz,",
+      copy.thanks,
       "odonexo.com",
       "Quality Solutions For Stress-Free Dentistry",
     ]
@@ -81,7 +121,7 @@ export async function sendOrderApprovalEmail(
     await transporter.sendMail({
       from: smtp.from,
       to,
-      subject: `Siparişiniz onaylandı — ${order.id}`,
+      subject: copy.subject(order.id),
       text,
       attachments: [
         {

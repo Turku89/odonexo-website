@@ -14,7 +14,7 @@ export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
   const formatPrice = useFormatPrice();
   const settings = useSiteSettings();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const [form, setForm] = useState({
     customerName: "",
@@ -74,6 +74,7 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          locale,
           items: items.map(({ product, quantity }) => ({
             productId: product.id,
             quantity,

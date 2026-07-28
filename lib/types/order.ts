@@ -1,5 +1,7 @@
 export type OrderStatus = "new" | "seen" | "approved";
 
+export type OrderLocale = "tr" | "sq" | "en";
+
 export interface OrderItem {
   productId: string;
   name: string;
@@ -26,6 +28,8 @@ export interface Order {
   totalEur: number;
   currency: "EUR";
   status: OrderStatus;
+  /** Sipariş verildiği andaki site dili */
+  locale?: OrderLocale;
   adminNote?: string;
   emailSentAt?: string;
   createdAt: string;
@@ -38,5 +42,6 @@ export interface CheckoutInput {
   customerEmail: string;
   customerAddress: string;
   notes?: string;
+  locale?: OrderLocale;
   items: { productId: string; quantity: number }[];
 }
