@@ -1,6 +1,7 @@
 import type { Order } from "@/lib/types/order";
 import type { SiteSettings } from "@/lib/types/site-settings";
 import { buildOrderPdf } from "@/lib/order-pdf";
+import { getInvoiceLabels, normalizeOrderLocale } from "@/lib/order-invoice-i18n";
 
 const TELEGRAM_TIMEOUT_MS = 12_000;
 
@@ -30,24 +31,33 @@ async function telegramFetch(
   });
 }
 
+function orderTitle(locale: string): string {
+  if (locale === "en") return "New order";
+  if (locale === "sq") return "Porosi e re";
+  return "Yeni sipariş";
+}
+
 function formatOrderText(order: Order): string {
+  const L = getInvoiceLabels(order.locale);
+  const locale = normalizeOrderLocale(order.locale);
+
   const lines = [
-    `🛒 Yeni sipariş: ${order.id}`,
+    `🛒 ${orderTitle(locale)}: ${order.id}`,
     `👤 ${order.customerName}`,
     `📞 ${order.customerPhone}`,
     order.customerEmail ? `✉️ ${order.customerEmail}` : "",
     `📍 ${order.customerAddress}`,
     order.notes ? `📝 ${order.notes}` : "",
     "",
-    "Ürünler:",
+    `${L.lineItems}:`,
     ...order.items.map(
       (item) =>
         `• ${item.name} x${item.quantity} — ${item.lineTotalEur.toFixed(2)} €`
     ),
     "",
-    `Ara toplam: ${order.subtotalEur.toFixed(2)} €`,
-    `Kargo: ${order.shippingEur.toFixed(2)} €`,
-    `Toplam: ${order.totalEur.toFixed(2)} €`,
+    `${L.subtotal}: ${order.subtotalEur.toFixed(2)} €`,
+    `${L.shipping}: ${order.shippingEur.toFixed(2)} €`,
+    `${L.grandTotal}: ${order.totalEur.toFixed(2)} €`,
   ];
   return lines.filter((l) => l !== "").join("\n");
 }
@@ -86,13 +96,15 @@ export async function sendTelegramOrderNotification(
   const { token, chatId } = resolveTelegramCredentials(settings);
   if (!token || !chatId) return false;
 
+  const locale = normalizeOrderLocale(order.locale);
+
   try {
     const pdf = await buildOrderPdf(order);
     const form = new FormData();
     form.append("chat_id", chatId);
     form.append(
       "caption",
-      `🛒 Yeni sipariş: ${order.id}\n👤 ${order.customerName}\n📞 ${order.customerPhone}`
+      `🛒 ${orderTitle(locale)}: ${order.id}\n👤 ${order.customerName}\n📞 ${order.customerPhone}\n🌐 ${locale.toUpperCase()}`
     );
     form.append(
       "document",
