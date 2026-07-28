@@ -30,9 +30,11 @@ export async function POST(request: Request) {
   const input: ProductInput = {
     name: body.name,
     nameSq: body.nameSq ?? "",
-    slug: body.slug || slugify(body.name),
+    nameEn: body.nameEn ?? "",
+    slug: body.slug || slugify(body.nameSq || body.name),
     description: body.description || "",
     descriptionSq: body.descriptionSq ?? "",
+    descriptionEn: body.descriptionEn ?? "",
     price: (() => {
       const n = parseDecimal(body.price);
       return Number.isFinite(n) ? n : 0;

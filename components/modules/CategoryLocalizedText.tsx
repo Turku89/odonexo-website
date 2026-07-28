@@ -5,7 +5,13 @@ import { useLocalizedCategoryText } from "@/lib/use-localized-category-text";
 
 type CategoryTextFields = Pick<
   Category,
-  "slug" | "name" | "description" | "nameSq" | "descriptionSq"
+  | "slug"
+  | "name"
+  | "description"
+  | "nameSq"
+  | "descriptionSq"
+  | "nameEn"
+  | "descriptionEn"
 >;
 
 /** Tek hook ile ad + açıklama — çift API çağrısını önler. */

@@ -20,19 +20,20 @@ import {
 } from "@/lib/product-i18n";
 import type { Product } from "@/lib/types/product";
 
+type ProductNameFields = Pick<Product, "name" | "nameSq" | "nameEn">;
+type ProductTextFields = Pick<
+  Product,
+  "name" | "nameSq" | "nameEn" | "description" | "descriptionSq" | "descriptionEn"
+>;
+
 interface LanguageContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   t: TranslationKeys;
   getCategoryName: (slug: string, fallback?: string) => string;
   getCategoryDescription: (slug: string, fallback?: string) => string;
-  getProductName: (product: Pick<Product, "name" | "nameSq">) => string;
-  getProductDescription: (
-    product: Pick<
-      Product,
-      "name" | "nameSq" | "description" | "descriptionSq"
-    >
-  ) => string;
+  getProductName: (product: ProductNameFields) => string;
+  getProductDescription: (product: ProductTextFields) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
@@ -40,15 +41,16 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 );
 
 const LOCALE_STORAGE_KEY = "odonexo-locale";
+const VALID_LOCALES: Locale[] = ["tr", "sq", "en"];
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("tr");
+  const [locale, setLocaleState] = useState<Locale>("sq");
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem(LOCALE_STORAGE_KEY) as Locale | null;
-      if (stored === "tr" || stored === "sq") setLocaleState(stored);
+      if (stored && VALID_LOCALES.includes(stored)) setLocaleState(stored);
     } catch {
       /* ignore */
     }
@@ -58,7 +60,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (isHydrated) {
       localStorage.setItem(LOCALE_STORAGE_KEY, locale);
-      document.documentElement.lang = locale === "sq" ? "sq" : "tr";
+      document.documentElement.lang = locale;
     }
   }, [locale, isHydrated]);
 
@@ -85,18 +87,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   );
 
   const getProductName = useCallback(
-    (product: Pick<Product, "name" | "nameSq">) =>
-      resolveProductName(product, locale),
+    (product: ProductNameFields) => resolveProductName(product, locale),
     [locale]
   );
 
   const getProductDescription = useCallback(
-    (
-      product: Pick<
-        Product,
-        "name" | "nameSq" | "description" | "descriptionSq"
-      >
-    ) => resolveProductDescription(product, locale),
+    (product: ProductTextFields) =>
+      resolveProductDescription(product, locale),
     [locale]
   );
 

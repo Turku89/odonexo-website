@@ -4,9 +4,11 @@ export interface Product {
   id: string;
   name: string;
   nameSq?: string;
+  nameEn?: string;
   slug: string;
   description: string;
   descriptionSq?: string;
+  descriptionEn?: string;
   price: number;
   originalPrice?: number;
   discountPercent?: number;

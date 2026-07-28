@@ -43,7 +43,7 @@ export default async function RootLayout({
   const siteSettings = toPublicSiteSettings(await getSiteSettings());
 
   return (
-    <html lang="tr" suppressHydrationWarning>
+    <html lang="sq" suppressHydrationWarning>
       <body className={`${montserrat.variable} font-sans`}>
         <LanguageProvider>
           <SiteSettingsProvider settings={siteSettings}>

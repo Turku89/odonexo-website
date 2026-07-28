@@ -35,9 +35,11 @@ export async function PUT(request: Request, { params }: RouteParams) {
   const patch: CategoryUpdateInput = {
     name: body.name,
     nameSq: body.nameSq,
+    nameEn: body.nameEn,
     slug: body.slug,
     description: body.description,
     descriptionSq: body.descriptionSq,
+    descriptionEn: body.descriptionEn,
     icon: body.icon,
     image: body.image,
     published: body.published,

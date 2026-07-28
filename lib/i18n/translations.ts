@@ -1,8 +1,9 @@
-export type Locale = "tr" | "sq";
+export type Locale = "tr" | "sq" | "en";
 
 export const locales: { code: Locale; label: string; flag: string }[] = [
-  { code: "tr", label: "Türkçe", flag: "🇹🇷" },
   { code: "sq", label: "Shqip", flag: "🇦🇱" },
+  { code: "en", label: "English", flag: "🇬🇧" },
+  { code: "tr", label: "Türkçe", flag: "🇹🇷" },
 ];
 
 const tr = {
@@ -245,7 +246,9 @@ const tr = {
   },
 };
 
-const sq = {
+export type TranslationKeys = typeof tr;
+
+const sq: TranslationKeys = {
   nav: {
     home: "Kryefaqja",
     products: "Produktet",
@@ -485,9 +488,247 @@ const sq = {
   },
 };
 
-export type TranslationKeys = typeof tr;
+const en: TranslationKeys = {
+  nav: {
+    home: "Home",
+    products: "Products",
+    categories: "Categories",
+    about: "About Us",
+    contact: "Contact",
+  },
+  header: {
+    tagline: "Your trusted supplier for dental laboratory materials",
+    search: "Search",
+    searchPlaceholder: "Search products... (ceramic, burs, plaster...)",
+    menu: "Menu",
+  },
+  footer: {
+    description:
+      "Quality material supplier for dental laboratories. Quality Solutions For Stress-Free Dentistry.",
+    categories: "Categories",
+    corporate: "Company",
+    shipping: "Shipping & Delivery",
+    returns: "Return Policy",
+    privacy: "Privacy Policy",
+    contact: "Contact",
+    rights: "All rights reserved.",
+    ssl: "SSL Secure",
+  },
+  hero: {
+    badge: "Dental Laboratory Materials",
+    title1: "Quality Materials,",
+    title2: "Perfect Smiles",
+    description:
+      "A wide range of ceramics, plaster, acrylics, burs and lab equipment. Fast delivery, secure payment.",
+    ctaProducts: "Explore Products",
+    ctaCategories: "Browse Categories",
+    fastShipping: "Fast Shipping",
+    securePayment: "Secure Payment",
+    originalProduct: "Original Products",
+    statProducts: "Product Types",
+    statCategories: "Categories",
+    statDelivery: "Fast Delivery",
+    statSatisfaction: "Satisfaction",
+  },
+  trust: {
+    fastShipping: "Fast Shipping",
+    fastShippingDesc: "Free shipping on orders over €50",
+    securePayment: "Secure Payment",
+    securePaymentDesc: "Protected checkout with 256-bit SSL",
+    support: "Technical Support",
+    supportDesc: "24/7 support from our expert team",
+    easyReturn: "Easy Returns",
+    easyReturnDesc: "Hassle-free returns within 14 days",
+  },
+  categories: {
+    title: "Product Categories",
+    subtitle: "Everything your laboratory needs, in one place",
+    products: "products",
+    pageTitle: "Categories",
+    pageSubtitle: "Choose a category and explore the products",
+    back: "Back to Categories",
+  },
+  products: {
+    featuredTitle: "Featured Products",
+    featuredSubtitle: "Most requested dental laboratory materials",
+    viewAll: "View All",
+    viewAllBtn: "View All Products",
+    allTitle: "All Products",
+    listing: "products listed",
+    searchFor: "search for",
+    filterCategories: "Categories",
+    all: "All",
+    notFound: "No products match these criteria.",
+    back: "Back to Products",
+    sku: "SKU",
+    inStock: "In Stock",
+    outOfStock: "Out of Stock",
+    addToCart: "Add to Cart",
+    added: "Added!",
+    addedToCart: "Added to cart!",
+    related: "Related Products",
+    fastShipping: "Fast Shipping",
+    fastShippingDesc: "Delivery within 1–3 business days",
+    originalProduct: "Original Product",
+    originalProductDesc: "Authorized distributor warranty",
+    badgeNew: "New",
+    badgeSale: "Sale",
+    badgeBestseller: "Bestseller",
+    clickToEnlarge: "Click to enlarge",
+    closeImage: "Close",
+    zoomIn: "Zoom in",
+    zoomOut: "Zoom out",
+    zoomReset: "Reset",
+    zoomHint: "Scroll to zoom · Double-click · Drag",
+  },
+  cart: {
+    title: "My Cart",
+    items: "items",
+    emptyTitle: "Your Cart Is Empty",
+    emptyDesc: "You have not added any products yet.",
+    startShopping: "Start Shopping",
+    remove: "Remove",
+    clear: "Clear Cart",
+    summary: "Order Summary",
+    subtotal: "Subtotal",
+    shipping: "Shipping",
+    free: "Free",
+    freeShippingNote: "Free shipping on orders over €50",
+    total: "Total",
+    checkout: "Checkout",
+    continue: "Continue Shopping",
+  },
+  checkout: {
+    title: "Checkout",
+    back: "Back to Cart",
+    customerInfo: "Customer Information",
+    name: "Full Name",
+    phone: "Phone",
+    email: "Email",
+    address: "Delivery Address",
+    notes: "Order Notes (optional)",
+    placeOrder: "Place Order",
+    placing: "Sending...",
+    successTitle: "Order Received!",
+    successDesc: "Your order number:",
+    successThanks: "We will contact you shortly.",
+    backToShop: "Back to Shop",
+    error: "Order could not be sent. Please try again.",
+  },
+  promo: {
+    badge: "New Models",
+    title: "Zirconia & Titanium Discs",
+    subtitle: "Premium dental disc solutions for CAD/CAM milling",
+    zirconDesc:
+      "Multi-layer dental zirconia disc. High aesthetics and strength.",
+    titaniumDesc:
+      "Grade 5 titanium disc. Ideal for implant and denture frameworks.",
+    viewProduct: "View Product",
+  },
+  cta: {
+    equipmentLabel: "Laboratory Equipment",
+    equipmentTitle: "Professional Equipment Solutions",
+    equipmentDesc:
+      "Top brands in furnaces, vacuum pumps and polishing units.",
+    explore: "Explore",
+    bulkLabel: "Bulk Purchase",
+    bulkTitle: "Request a Corporate Quote",
+    bulkDesc:
+      "Special pricing and bulk purchase benefits for your laboratory.",
+    requestQuote: "Request Quote",
+  },
+  newsletter: {
+    title: "Stay Updated on Campaigns",
+    description:
+      "Subscribe for new products, special discounts and industry news.",
+    placeholder: "Your email address",
+    subscribe: "Subscribe",
+    success: "Thank you! You have successfully subscribed to our newsletter.",
+  },
+  about: {
+    title: "About Us",
+    subtitle:
+      "Quality Solutions For Stress-Free Dentistry — Trusted material supplier for dental laboratories",
+    whoTitle: "Who Are We?",
+    whoP1:
+      "With 35 years of experience running laboratories and clinics, we focused on the issue that stressed us most. Even specialized labs and clinics face serious problems from unexpected material and equipment failures. In Albania, there is often no time left to solve them. That is why we had to keep a spare CAD/CAM, compressor or materials in stock. Devices without immediate service and materials without continuity created a lot of stress.",
+    whoP2:
+      "To move past these problems we built our own brand and a complete supply chain. We tested quality materials and machines ourselves, at fair price parity, so they work together smoothly. We share this quality with our colleagues with full transparency and service support. We built a complete team. Are you ready to work without stress?",
+    whoP3:
+      "Under Art Dent in Korça and Tirana, with 7 specialist doctors, 2 surgeons, 1 professor doctor and a 45-person laboratory team, we have served for years. Now under the new name odonexo we offer specialized production materials, hand instruments and machines via online ordering. Thank you in advance for the trust — with a full service network and guaranteed products. odonexo.com supports stress-free, reliable work with quality materials and equipment.",
+    whoP4:
+      "We provide same-day delivery and service across Albania; surgical support for implants; and laser, titan bar blender and Exocad support in the lab so you can deliver work without issues. For patients coming from elsewhere, unknown implant parts (analog, transfer, abutment, MUA and any other parts) can be supplied from odonexo.com.",
+    valuesTitle: "Our Values",
+    valuesSubtitle: "The principles that guide us at every step",
+    quality: "Quality",
+    qualityDesc:
+      "We supply only original and certified products. All our products are covered by authorized distributor warranty.",
+    expertise: "Expertise",
+    expertiseDesc:
+      "We offer technical support and product consulting with years of experience in the dental laboratory sector.",
+    accessibility: "Accessibility",
+    accessibilityDesc:
+      "We deliver the materials you need to your laboratory with fast shipping across the region.",
+    trust: "Trust",
+    trustDesc:
+      "We build long-term partnerships with a customer satisfaction–focused approach.",
+  },
+  contact: {
+    title: "Contact",
+    subtitle: "Reach us for questions and corporate quote requests",
+    address: "Address",
+    addressValue: "Bağdat Cad. No: 123\nKadıköy, Istanbul 34710",
+    phone: "Phone",
+    whatsapp: "WhatsApp",
+    telegram: "Telegram",
+    email: "Email",
+    hours: "Working Hours",
+    hoursValue: "Mon – Fri: 09:00 – 18:00\nSat: 09:00 – 14:00",
+    formTitle: "Write to Us",
+    successTitle: "Your message was sent successfully!",
+    successDesc: "We will get back to you as soon as possible.",
+    name: "Full Name",
+    emailLabel: "Email",
+    subject: "Subject",
+    message: "Message",
+    send: "Send",
+    subjects: {
+      general: "General Information",
+      product: "Product Inquiry",
+      corporate: "Corporate Quote",
+      support: "Technical Support",
+      feedback: "Complaint / Suggestion",
+    },
+  },
+  categoryData: {
+    "seramik-porselen": {
+      name: "Ceramic & Porcelain",
+      description: "Dental ceramics, porcelain powders and glaze materials",
+    },
+    "alci-modelaj": {
+      name: "Plaster & Modeling",
+      description: "Plaster types, modeling waxes and articulator materials",
+    },
+    "akrilik-protez": {
+      name: "Acrylic & Denture",
+      description: "Acrylic resins, tooth sets and denture materials",
+    },
+    "freze-el-aletleri": {
+      name: "Burs & Hand Instruments",
+      description: "CAD/CAM burs, hand instruments and rotary systems",
+    },
+    "laboratuvar-ekipmanlari": {
+      name: "Laboratory Equipment",
+      description: "Furnaces, vacuum pumps and polishing units",
+    },
+    "sarf-malzemeler": {
+      name: "Consumables",
+      description: "Gloves, masks, disinfectants and disposable products",
+    },
+  },
+};
 
-export const translations: Record<Locale, TranslationKeys> = { tr, sq };
+export const translations: Record<Locale, TranslationKeys> = { tr, sq, en };
 
 export function getCategoryTranslation(
   locale: Locale,

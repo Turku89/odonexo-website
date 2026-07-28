@@ -25,9 +25,11 @@ export async function POST(request: Request) {
   const input: CategoryInput = {
     name: body.name,
     nameSq: body.nameSq ?? "",
-    slug: body.slug || slugify(body.name),
+    nameEn: body.nameEn ?? "",
+    slug: body.slug || slugify(body.nameSq || body.name),
     description: body.description || "",
     descriptionSq: body.descriptionSq ?? "",
+    descriptionEn: body.descriptionEn ?? "",
     icon: body.icon || "📦",
     image: body.image || "",
     published: body.published !== false,

@@ -1,12 +1,14 @@
 export interface Category {
   id: string;
   name: string;
-  /** Opsiyonel Arnavutça ad — boşsa dil seçiminde otomatik çevrilir */
+  /** Arnavutça ad — kaynak dil */
   nameSq?: string;
+  /** İngilizce ad */
+  nameEn?: string;
   slug: string;
   description: string;
-  /** Opsiyonel Arnavutça açıklama — boşsa dil seçiminde otomatik çevrilir */
   descriptionSq?: string;
+  descriptionEn?: string;
   icon: string;
   image?: string;
   published: boolean;

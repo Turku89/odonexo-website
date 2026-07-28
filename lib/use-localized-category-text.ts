@@ -1,27 +1,38 @@
 "use client";
 
 import { useAutoTranslate } from "@/lib/use-auto-translate";
-import { resolveCategoryManualSq } from "@/lib/category-i18n";
+import { resolveCategoryManual } from "@/lib/category-i18n";
 import type { Category } from "@/lib/types/category";
 
 type CategoryTextFields = Pick<
   Category,
-  "slug" | "name" | "description" | "nameSq" | "descriptionSq"
+  | "slug"
+  | "name"
+  | "description"
+  | "nameSq"
+  | "descriptionSq"
+  | "nameEn"
+  | "descriptionEn"
 >;
 
 /**
- * Kategori adı ve açıklaması: manuel/sabit SQ varsa onu kullanır,
- * yoksa dil Arnavutça seçilince otomatik çevirir.
+ * Kategori adı/açıklama: manuel çeviri varsa onu kullanır,
+ * yoksa seçili dile otomatik çevirir (EN için önce SQ kaynak).
  */
 export function useLocalizedCategoryText(category: CategoryTextFields) {
-  const manual = resolveCategoryManualSq(category);
+  const manual = resolveCategoryManual(category);
 
-  const { text: name, translating: translatingName } = useAutoTranslate(
-    category.name,
-    manual.nameSq
-  );
+  const { text: name, translating: translatingName } = useAutoTranslate({
+    tr: category.name,
+    sq: manual.nameSq,
+    en: manual.nameEn,
+  });
   const { text: description, translating: translatingDescription } =
-    useAutoTranslate(category.description || "", manual.descriptionSq);
+    useAutoTranslate({
+      tr: category.description || "",
+      sq: manual.descriptionSq,
+      en: manual.descriptionEn,
+    });
 
   return {
     name,

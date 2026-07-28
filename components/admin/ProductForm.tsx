@@ -33,6 +33,8 @@ function slugify(text: string) {
     .replace(/ı/g, "i")
     .replace(/ö/g, "o")
     .replace(/ç/g, "c")
+    .replace(/ë/g, "e")
+    .replace(/ç/g, "c")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 }
@@ -55,7 +57,8 @@ export default function ProductForm({
   const formatPrice = useFormatPrice();
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [translatingSq, setTranslatingSq] = useState(false);
+  const [translatingEn, setTranslatingEn] = useState(false);
+  const [translatingTr, setTranslatingTr] = useState(false);
   const [error, setError] = useState("");
   const isSale = product?.badge === "sale";
 
@@ -65,12 +68,14 @@ export default function ProductForm({
   const [skuManual, setSkuManual] = useState(mode === "edit");
 
   const [form, setForm] = useState({
-    name: product?.name || "",
     nameSq: product?.nameSq || "",
+    nameEn: product?.nameEn || "",
+    name: product?.name || "",
     slug: product?.slug || "",
     sku: initialSku,
-    description: product?.description || "",
     descriptionSq: product?.descriptionSq || "",
+    descriptionEn: product?.descriptionEn || "",
+    description: product?.description || "",
     price: isSale
       ? (product?.originalPrice ?? product?.price ?? "").toString()
       : product?.price?.toString() || "",
@@ -91,27 +96,67 @@ export default function ProductForm({
     setSkuManual(false);
   };
 
-  /** Opsiyonel Arnavutça isim girilince açıklamayı da çevirir (boşsa veya güncelle istenirse). */
-  const syncDescriptionSqFromTurkish = async (
-    nameSq: string,
-    force = false
-  ) => {
-    const trimmedNameSq = nameSq.trim();
-    const trDesc = form.description.trim();
-    if (!trimmedNameSq || !trDesc) return;
-    if (!force && form.descriptionSq.trim()) return;
+  /** Arnavutça kaynaktan İngilizce öneri üretir; admin düzenleyebilir. */
+  const suggestEnglishFromAlbanian = async (force = false) => {
+    const nameSq = form.nameSq.trim();
+    const descSq = form.descriptionSq.trim();
+    if (!nameSq && !descSq) return;
 
-    setTranslatingSq(true);
+    setTranslatingEn(true);
     try {
-      const translated = await translateText(trDesc, "tr", "sq");
-      const withName = applyNameToDescription(
-        translated,
-        { name: form.name, nameSq: trimmedNameSq },
-        "sq"
-      );
-      setForm((prev) => ({ ...prev, descriptionSq: withName }));
+      const next: Partial<typeof form> = {};
+
+      if (nameSq && (force || !form.nameEn.trim())) {
+        next.nameEn = await translateText(nameSq, "sq", "en");
+      }
+
+      if (descSq && (force || !form.descriptionEn.trim())) {
+        const translated = await translateText(descSq, "sq", "en");
+        const nameEn = (next.nameEn || form.nameEn).trim() || nameSq;
+        next.descriptionEn = applyNameToDescription(
+          translated,
+          { name: form.name, nameSq, nameEn },
+          "en"
+        );
+      }
+
+      if (Object.keys(next).length) {
+        setForm((prev) => ({ ...prev, ...next }));
+      }
     } finally {
-      setTranslatingSq(false);
+      setTranslatingEn(false);
+    }
+  };
+
+  /** İsteğe bağlı TR alanlarını Arnavutçadan doldurur. */
+  const suggestTurkishFromAlbanian = async (force = false) => {
+    const nameSq = form.nameSq.trim();
+    const descSq = form.descriptionSq.trim();
+    if (!nameSq && !descSq) return;
+
+    setTranslatingTr(true);
+    try {
+      const next: Partial<typeof form> = {};
+
+      if (nameSq && (force || !form.name.trim())) {
+        next.name = await translateText(nameSq, "sq", "tr");
+      }
+
+      if (descSq && (force || !form.description.trim())) {
+        const translated = await translateText(descSq, "sq", "tr");
+        const nameTr = (next.name || form.name).trim() || nameSq;
+        next.description = applyNameToDescription(
+          translated,
+          { name: nameTr, nameSq, nameEn: form.nameEn },
+          "tr"
+        );
+      }
+
+      if (Object.keys(next).length) {
+        setForm((prev) => ({ ...prev, ...next }));
+      }
+    } finally {
+      setTranslatingTr(false);
     }
   };
 
@@ -133,7 +178,7 @@ export default function ProductForm({
   const update = (key: string, value: string | boolean | string[]) => {
     setForm((prev) => {
       const next = { ...prev, [key]: value };
-      if (key === "name" && mode === "create") {
+      if (key === "nameSq" && mode === "create") {
         next.slug = slugify(value as string);
       }
       if (key === "badge") {
@@ -236,6 +281,13 @@ export default function ProductForm({
     setSaving(true);
     setError("");
 
+    const nameSq = form.nameSq.trim();
+    if (!nameSq) {
+      setError("Arnavutça ürün adı zorunludur (kaynak dil).");
+      setSaving(false);
+      return;
+    }
+
     const isSaleBadge = form.badge === "sale";
     const listPrice = parseDecimal(form.price);
     const discount = Number(form.discountPercent) || 0;
@@ -266,27 +318,44 @@ export default function ProductForm({
       }
     }
 
-    let descriptionSq = form.descriptionSq;
-    if (form.nameSq.trim() && !descriptionSq.trim() && form.description.trim()) {
-      try {
-        const translated = await translateText(form.description, "tr", "sq");
-        descriptionSq = applyNameToDescription(
-          translated,
-          { name: form.name, nameSq: form.nameSq.trim() },
-          "sq"
-        );
-      } catch {
-        /* kaydetmeye devam */
+    let nameEn = form.nameEn.trim();
+    let descriptionEn = form.descriptionEn.trim();
+    let name = form.name.trim();
+    let description = form.description.trim();
+    const descriptionSq = form.descriptionSq.trim();
+
+    // İngilizce boşsa Arnavutçadan öner (kaydetmeden önce; admin sonra düzeltebilir)
+    try {
+      if (!nameEn && nameSq) {
+        nameEn = await translateText(nameSq, "sq", "en");
       }
+      if (!descriptionEn && descriptionSq) {
+        const translated = await translateText(descriptionSq, "sq", "en");
+        descriptionEn = applyNameToDescription(
+          translated,
+          { name, nameSq, nameEn },
+          "en"
+        );
+      }
+      if (!name) {
+        name = nameEn || nameSq;
+      }
+      if (!description && descriptionSq) {
+        description = await translateText(descriptionSq, "sq", "tr");
+      }
+    } catch {
+      if (!name) name = nameSq;
     }
 
     const payload = {
-      name: form.name,
-      nameSq: form.nameSq,
-      slug: form.slug,
+      name,
+      nameSq,
+      nameEn,
+      slug: form.slug || slugify(nameSq),
       sku: form.sku,
-      description: form.description,
+      description,
       descriptionSq,
+      descriptionEn,
       price,
       originalPrice: isSaleBadge ? originalPrice : undefined,
       discountPercent: isSaleBadge ? discountPercent : undefined,
@@ -340,41 +409,128 @@ export default function ProductForm({
         <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
-        <h2 className="font-semibold text-slate-800">Temel Bilgiler</h2>
+      <div className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-6 space-y-5">
+        <div>
+          <h2 className="font-semibold text-slate-800">Arnavutça (kaynak dil) *</h2>
+          <p className="mt-1 text-xs text-slate-500">
+            Ürünü önce Arnavutça girin. İngilizce ve Türkçe alanlar buradan önerilir; kaydetmeden önce kontrol edin.
+          </p>
+        </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm font-medium">Ürün Adı (Türkçe) *</label>
+            <label className="mb-1 block text-sm font-medium">Ürün Adı (Arnavutça) *</label>
             <input
               required
-              value={form.name}
-              onChange={(e) => update("name", e.target.value)}
+              value={form.nameSq}
+              onChange={(e) => update("nameSq", e.target.value)}
               onBlur={(e) => {
                 if (mode === "create" && !skuManual && e.target.value.trim()) {
                   regenerateSku(e.target.value);
                 }
               }}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             />
             <p className="mt-1.5 text-xs text-slate-400">
               Adı yazıp alandan çıktığınızda SKU otomatik oluşur.
             </p>
           </div>
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm font-medium">Ürün Adı (Arnavutça)</label>
+            <label className="mb-1 block text-sm font-medium">Açıklama (Arnavutça)</label>
+            <textarea
+              rows={4}
+              value={form.descriptionSq}
+              onChange={(e) => update("descriptionSq", e.target.value)}
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 resize-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-sky-200 bg-sky-50/40 p-6 space-y-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="font-semibold text-slate-800">İngilizce (öneri + düzenleme)</h2>
+            <p className="mt-1 text-xs text-slate-500">
+              Arnavutçadan otomatik öneri üretilir. Metni kontrol edip düzeltin; marka/model adlarını koruyun.
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={
+              translatingEn ||
+              (!form.nameSq.trim() && !form.descriptionSq.trim())
+            }
+            onClick={() => void suggestEnglishFromAlbanian(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-sky-300 bg-white px-3 py-1.5 text-xs font-medium text-sky-800 hover:bg-sky-50 disabled:opacity-40"
+          >
+            <Languages className="h-3.5 w-3.5" />
+            {translatingEn ? "Çevriliyor…" : "Arnavutçadan öner"}
+          </button>
+        </div>
+
+        <div className="grid gap-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium">Ürün Adı (İngilizce)</label>
             <input
-              value={form.nameSq}
-              onChange={(e) => update("nameSq", e.target.value)}
-              onBlur={() => {
-                void syncDescriptionSqFromTurkish(form.nameSq);
-              }}
-              placeholder="Opsiyonel — girilirse dil Arnavutça iken ad ve açıklama değişir"
+              value={form.nameEn}
+              onChange={(e) => update("nameEn", e.target.value)}
+              placeholder="Öneri için yukarıdaki butonu kullanın"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Açıklama (İngilizce)</label>
+            <textarea
+              rows={4}
+              value={form.descriptionEn}
+              onChange={(e) => update("descriptionEn", e.target.value)}
+              placeholder="Öneriyi kontrol edip gerekirse düzeltin"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 resize-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="font-semibold text-slate-800">Türkçe (isteğe bağlı)</h2>
+            <p className="mt-1 text-xs text-slate-500">
+              Site Türkçe seçildiğinde kullanılır. Boş bırakılırsa kayıtta Arnavutça/İngilizce yedeklenir.
+            </p>
+          </div>
+          <button
+            type="button"
+            disabled={
+              translatingTr ||
+              (!form.nameSq.trim() && !form.descriptionSq.trim())
+            }
+            onClick={() => void suggestTurkishFromAlbanian(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+          >
+            <Languages className="h-3.5 w-3.5" />
+            {translatingTr ? "Çevriliyor…" : "Arnavutçadan öner"}
+          </button>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <label className="mb-1 block text-sm font-medium">Ürün Adı (Türkçe)</label>
+            <input
+              value={form.name}
+              onChange={(e) => update("name", e.target.value)}
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             />
-            <p className="mt-1.5 text-xs text-slate-400">
-              Bu alan doldurulunca Arnavutça açıklama boşsa Türkçe açıklamadan otomatik çevrilir.
-            </p>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-1 block text-sm font-medium">Açıklama (Türkçe)</label>
+            <textarea
+              rows={3}
+              value={form.description}
+              onChange={(e) => update("description", e.target.value)}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 resize-none"
+            />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">Slug</label>
@@ -399,8 +555,8 @@ export default function ProductForm({
               {mode === "create" && (
                 <button
                   type="button"
-                  onClick={() => regenerateSku(form.name)}
-                  disabled={!form.name.trim()}
+                  onClick={() => regenerateSku(form.nameSq || form.name)}
+                  disabled={!form.nameSq.trim() && !form.name.trim()}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40"
                   title="SKU yeniden oluştur"
                 >
@@ -408,46 +564,6 @@ export default function ProductForm({
                 </button>
               )}
             </div>
-            <p className="mt-1.5 text-xs text-slate-400">
-              SKU ürün adından üretilir (ör. &quot;Scan Spreyi&quot; → SCAN-SPR-001,
-              &quot;Scan Aleti&quot; → SCAN-ALE-001). Dilerseniz değiştirebilirsiniz.
-            </p>
-          </div>
-          <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm font-medium">Açıklama (Türkçe)</label>
-            <textarea
-              rows={4}
-              value={form.description}
-              onChange={(e) => update("description", e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 resize-none"
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <div className="mb-1 flex items-center justify-between gap-2">
-              <label className="block text-sm font-medium">Açıklama (Arnavutça)</label>
-              <button
-                type="button"
-                disabled={
-                  translatingSq ||
-                  !form.nameSq.trim() ||
-                  !form.description.trim()
-                }
-                onClick={() =>
-                  void syncDescriptionSqFromTurkish(form.nameSq, true)
-                }
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40"
-              >
-                <Languages className="h-3.5 w-3.5" />
-                {translatingSq ? "Çevriliyor…" : "Türkçeden çevir"}
-              </button>
-            </div>
-            <textarea
-              rows={4}
-              value={form.descriptionSq}
-              onChange={(e) => update("descriptionSq", e.target.value)}
-              placeholder="Opsiyonel — dil Arnavutça iken bu açıklama gösterilir"
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 resize-none"
-            />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">Kategori *</label>
@@ -458,7 +574,7 @@ export default function ProductForm({
             >
               {categories.map((c) => (
                 <option key={c.id} value={c.slug}>
-                  {c.name}
+                  {c.nameSq || c.name}
                 </option>
               ))}
             </select>
@@ -498,9 +614,6 @@ export default function ProductForm({
               placeholder="Örn: 1.5 veya 1,5"
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             />
-            <p className="mt-1 text-xs text-slate-400">
-              Ondalık için nokta veya virgül kullanabilirsiniz (1.5 / 1,5)
-            </p>
           </div>
 
           {form.badge === "sale" && (
@@ -534,10 +647,6 @@ export default function ProductForm({
                   %{salePreview.discount} indirim
                 </span>
               </div>
-              <p className="mt-2 text-xs text-slate-500">
-                Eski fiyat: {formatPrice(salePreview.listPrice)} → Yeni fiyat:{" "}
-                {formatPrice(salePreview.salePrice)}
-              </p>
             </div>
           )}
 

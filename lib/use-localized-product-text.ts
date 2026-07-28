@@ -7,38 +7,48 @@ import { useLanguage } from "@/lib/i18n/language-context";
 
 type ProductTextFields = Pick<
   Product,
-  "name" | "nameSq" | "description" | "descriptionSq"
+  "name" | "nameSq" | "nameEn" | "description" | "descriptionSq" | "descriptionEn"
 >;
 
 /**
- * Ürün adı/açıklama: manuel SQ varsa onu kullanır,
- * yoksa dil Arnavutça seçilince otomatik çevirir.
+ * Ürün adı/açıklama: manuel çeviri varsa onu kullanır,
+ * yoksa seçili dile (EN için önce SQ kaynak) otomatik çevirir.
  */
 export function useLocalizedProductText(product: ProductTextFields) {
   const { locale } = useLanguage();
 
-  const { text: name, translating: translatingName } = useAutoTranslate(
-    product.name,
-    product.nameSq
-  );
+  const { text: name, translating: translatingName } = useAutoTranslate({
+    tr: product.name,
+    sq: product.nameSq,
+    en: product.nameEn,
+  });
 
   const { text: rawDescription, translating: translatingDescription } =
-    useAutoTranslate(product.description || "", product.descriptionSq);
+    useAutoTranslate({
+      tr: product.description || "",
+      sq: product.descriptionSq,
+      en: product.descriptionEn,
+    });
 
-  const description =
+  const localizedName =
     locale === "sq"
-      ? applyNameToDescription(
-          rawDescription,
-          {
-            name: product.name,
-            nameSq: product.nameSq?.trim() || name,
-          },
-          "sq"
-        )
-      : rawDescription;
+      ? product.nameSq?.trim() || name
+      : locale === "en"
+        ? product.nameEn?.trim() || name
+        : product.name;
+
+  const description = applyNameToDescription(
+    rawDescription,
+    {
+      name: product.name,
+      nameSq: product.nameSq?.trim() || (locale === "sq" ? name : product.nameSq),
+      nameEn: product.nameEn?.trim() || (locale === "en" ? name : product.nameEn),
+    },
+    locale
+  );
 
   return {
-    name,
+    name: localizedName || name,
     description,
     translating: translatingName || translatingDescription,
   };

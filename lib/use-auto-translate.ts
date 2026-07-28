@@ -1,27 +1,64 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "@/lib/i18n/language-context";
-import { translateText } from "@/lib/translate";
+import { translateText, type Lang } from "@/lib/translate";
+import type { Locale } from "@/lib/i18n/translations";
+
+export type LocalizedTexts = {
+  tr: string;
+  sq?: string | null;
+  en?: string | null;
+};
+
+function pickManual(texts: LocalizedTexts, locale: Locale): string {
+  const tr = texts.tr?.trim() || "";
+  const sq = texts.sq?.trim() || "";
+  const en = texts.en?.trim() || "";
+
+  if (locale === "sq" && sq) return sq;
+  if (locale === "en" && en) return en;
+  if (locale === "tr") return tr;
+  return tr || sq || en;
+}
 
 /**
- * Dil SQ iken manuel çeviri yoksa Türkçe metni otomatik çevirir.
- * TR dilinde her zaman Türkçe metni döner.
+ * Manuel çeviri varsa onu kullanır; yoksa hedef dile otomatik çevirir.
+ * EN için önce Arnavutça (sq), yoksa Türkçe kaynak kullanılır.
  */
 export function useAutoTranslate(
-  textTr: string,
-  textSq?: string | null
+  textTrOrTexts: string | LocalizedTexts,
+  textSq?: string | null,
+  textEn?: string | null
 ): { text: string; translating: boolean } {
   const { locale } = useLanguage();
-  const trimmedSq = textSq?.trim() || "";
-  const trimmedTr = textTr?.trim() || "";
 
-  const manual =
-    locale === "sq" && trimmedSq ? trimmedSq : textTr || "";
+  const texts: LocalizedTexts =
+    typeof textTrOrTexts === "string"
+      ? { tr: textTrOrTexts, sq: textSq, en: textEn }
+      : textTrOrTexts;
 
-  const needsAuto =
-    locale === "sq" && !trimmedSq && Boolean(trimmedTr);
+  const tr = texts.tr?.trim() || "";
+  const sq = texts.sq?.trim() || "";
+  const en = texts.en?.trim() || "";
 
+  const manual = pickManual(texts, locale);
+
+  const source = useMemo(() => {
+    if (locale === "sq" && !sq) {
+      if (tr) return { text: tr, from: "tr" as Lang };
+      if (en) return { text: en, from: "en" as Lang };
+      return null;
+    }
+    if (locale === "en" && !en) {
+      if (sq) return { text: sq, from: "sq" as Lang };
+      if (tr) return { text: tr, from: "tr" as Lang };
+      return null;
+    }
+    return null;
+  }, [locale, tr, sq, en]);
+
+  const needsAuto = Boolean(source);
   const [text, setText] = useState(manual);
   const [translating, setTranslating] = useState(false);
 
@@ -29,27 +66,31 @@ export function useAutoTranslate(
     let cancelled = false;
 
     async function run() {
-      if (!needsAuto) {
+      if (!needsAuto || !source) {
         setText(manual);
         setTranslating(false);
         return;
       }
 
       setTranslating(true);
-      setText(manual);
+      setText(manual || source.text);
 
-      const translated = await translateText(trimmedTr, "tr", "sq");
+      const translated = await translateText(
+        source.text,
+        source.from,
+        locale as Lang
+      );
       if (cancelled) return;
 
       setText(translated);
       setTranslating(false);
     }
 
-    run();
+    void run();
     return () => {
       cancelled = true;
     };
-  }, [locale, manual, needsAuto, trimmedTr]);
+  }, [locale, manual, needsAuto, source]);
 
   return { text, translating };
 }

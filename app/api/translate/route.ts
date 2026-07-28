@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 
-type Lang = "tr" | "sq";
+type Lang = "tr" | "sq" | "en";
+
+const ALLOWED: Lang[] = ["tr", "sq", "en"];
+
+function normalizeLang(value: unknown): Lang | null {
+  return ALLOWED.includes(value as Lang) ? (value as Lang) : null;
+}
 
 async function translateViaGoogle(
   text: string,
@@ -54,8 +60,8 @@ export async function POST(request: Request) {
   }
 
   const text = body.text?.trim() || "";
-  const from = body.from === "sq" ? "sq" : "tr";
-  const to = body.to === "sq" ? "sq" : "tr";
+  const from = normalizeLang(body.from) || "tr";
+  const to = normalizeLang(body.to) || "en";
 
   if (!text) {
     return NextResponse.json({ translated: "" });

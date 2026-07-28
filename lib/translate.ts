@@ -1,4 +1,4 @@
-type Lang = "tr" | "sq";
+export type Lang = "tr" | "sq" | "en";
 
 const memoryCache = new Map<string, string>();
 

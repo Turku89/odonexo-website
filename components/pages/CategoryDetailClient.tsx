@@ -12,7 +12,7 @@ import { useLocalizedCategoryText } from "@/lib/use-localized-category-text";
 interface CategoryDetailClientProps {
   category: Pick<
     Category,
-    "slug" | "name" | "description" | "nameSq" | "descriptionSq" | "icon" | "image"
+    "slug" | "name" | "description" | "nameSq" | "descriptionSq" | "nameEn" | "descriptionEn" | "icon" | "image"
   >;
   products: Product[];
 }

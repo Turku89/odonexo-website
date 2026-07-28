@@ -42,9 +42,11 @@ export async function PUT(request: Request, { params }: RouteParams) {
   const patch: ProductUpdateInput = {
     name: body.name,
     nameSq: body.nameSq,
+    nameEn: body.nameEn,
     slug: body.slug,
     description: body.description,
     descriptionSq: body.descriptionSq,
+    descriptionEn: body.descriptionEn,
     price:
       body.price !== undefined
         ? (() => {
