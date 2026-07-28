@@ -1,10 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { formatPriceFromEur } from "@/lib/currency";
 import type { Order, OrderStatus } from "@/lib/types/order";
-import { Eye, PackageCheck, ShoppingBag } from "lucide-react";
+import {
+  Eye,
+  PackageCheck,
+  RefreshCw,
+  Search,
+  ShoppingBag,
+} from "lucide-react";
 
 const statusLabel: Record<OrderStatus, string> = {
   new: "Yeni",
@@ -18,21 +25,121 @@ const statusClass: Record<OrderStatus, string> = {
   approved: "bg-green-50 text-green-700 ring-green-100",
 };
 
+type StatusFilter = "all" | OrderStatus;
+type DateFilter = "all" | "today" | "week" | "month";
+
+const POLL_MS = 8_000;
+
+function startOfToday() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
+function daysAgo(n: number) {
+  return Date.now() - n * 24 * 60 * 60 * 1000;
+}
+
 export default function OrderList() {
+  const pathname = usePathname();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | OrderStatus>("all");
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [dateFilter, setDateFilter] = useState<DateFilter>("all");
+  const [query, setQuery] = useState("");
 
-  useEffect(() => {
-    fetch("/api/admin/orders")
-      .then((res) => res.json())
-      .then((data) => setOrders(Array.isArray(data) ? data : []))
-      .catch(() => setOrders([]))
-      .finally(() => setLoading(false));
+  const loadOrders = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    else setRefreshing(true);
+    setError("");
+
+    try {
+      const res = await fetch(`/api/admin/orders?t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" },
+      });
+      if (!res.ok) {
+        setError("Siparişler yüklenemedi");
+        return;
+      }
+      const data = await res.json();
+      setOrders(Array.isArray(data) ? data : []);
+    } catch {
+      setError("Siparişler yüklenemedi (ağ hatası)");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
 
-  const filtered =
-    filter === "all" ? orders : orders.filter((o) => o.status === filter);
+  useEffect(() => {
+    if (!pathname.startsWith("/admin/orders")) return;
+    void loadOrders();
+  }, [pathname, loadOrders]);
+
+  useEffect(() => {
+    if (pathname !== "/admin/orders") return;
+
+    const onFocus = () => void loadOrders(true);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void loadOrders(true);
+    };
+
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("odonexo-orders-changed", onFocus);
+    const timer = window.setInterval(() => void loadOrders(true), POLL_MS);
+
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("odonexo-orders-changed", onFocus);
+      window.clearInterval(timer);
+    };
+  }, [pathname, loadOrders]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const todayStart = startOfToday();
+
+    return orders.filter((order) => {
+      if (statusFilter !== "all" && order.status !== statusFilter) return false;
+
+      const created = new Date(order.createdAt).getTime();
+      if (dateFilter === "today" && created < todayStart) return false;
+      if (dateFilter === "week" && created < daysAgo(7)) return false;
+      if (dateFilter === "month" && created < daysAgo(30)) return false;
+
+      if (!q) return true;
+
+      const haystack = [
+        order.id,
+        order.customerName,
+        order.customerPhone,
+        order.customerEmail,
+        order.customerAddress,
+        order.notes,
+        order.adminNote,
+        ...order.items.map((i) => `${i.name} ${i.sku}`),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return haystack.includes(q);
+    });
+  }, [orders, statusFilter, dateFilter, query]);
+
+  const statusCounts = useMemo(() => {
+    return {
+      all: orders.length,
+      new: orders.filter((o) => o.status === "new").length,
+      seen: orders.filter((o) => o.status === "seen").length,
+      approved: orders.filter((o) => o.status === "approved").length,
+    };
+  }, [orders]);
 
   if (loading) {
     return <p className="text-sm text-slate-500">Siparişler yükleniyor…</p>;
@@ -40,6 +147,29 @@ export default function OrderList() {
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Ara: sipariş no, müşteri, telefon, e-posta, ürün…"
+            className="w-full rounded-lg border border-slate-200 py-2.5 pl-10 pr-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => void loadOrders(true)}
+          disabled={refreshing}
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+        >
+          <RefreshCw
+            className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+          />
+          Yenile
+        </button>
+      </div>
+
       <div className="flex flex-wrap gap-2">
         {(
           [
@@ -52,30 +182,78 @@ export default function OrderList() {
           <button
             key={key}
             type="button"
-            onClick={() => setFilter(key)}
+            onClick={() => setStatusFilter(key)}
             className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
-              filter === key
+              statusFilter === key
                 ? "bg-brand text-white"
                 : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
             }`}
           >
             {label}
-            {key !== "all" && (
-              <span className="ml-1.5 opacity-80">
-                ({orders.filter((o) => o.status === key).length})
-              </span>
-            )}
+            <span className="ml-1.5 opacity-80">({statusCounts[key]})</span>
           </button>
         ))}
       </div>
 
+      <div className="flex flex-wrap gap-2">
+        {(
+          [
+            ["all", "Tüm tarihler"],
+            ["today", "Bugün"],
+            ["week", "Son 7 gün"],
+            ["month", "Son 30 gün"],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setDateFilter(key)}
+            className={`rounded-full px-3 py-1 text-xs font-medium ${
+              dateFilter === key
+                ? "bg-slate-800 text-white"
+                : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {error && (
+        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+          {error}
+        </p>
+      )}
+
+      <p className="text-xs text-slate-400">
+        {filtered.length} / {orders.length} sipariş gösteriliyor
+        {refreshing ? " · güncelleniyor…" : ""}
+      </p>
+
       {filtered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-200 bg-white px-6 py-16 text-center">
           <ShoppingBag className="mx-auto h-10 w-10 text-slate-300" />
-          <p className="mt-3 text-sm text-slate-500">Henüz sipariş yok.</p>
+          <p className="mt-3 text-sm text-slate-500">
+            {orders.length === 0
+              ? "Henüz sipariş yok."
+              : "Filtrelere uyan sipariş bulunamadı."}
+          </p>
+          {(query || statusFilter !== "all" || dateFilter !== "all") && (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery("");
+                setStatusFilter("all");
+                setDateFilter("all");
+              }}
+              className="mt-3 text-sm font-medium text-brand hover:underline"
+            >
+              Filtreleri temizle
+            </button>
+          )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="overflow-x-auto overflow-hidden rounded-xl border border-slate-200 bg-white">
           <table className="min-w-full text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
               <tr>
@@ -103,7 +281,14 @@ export default function OrderList() {
                     <p className="font-medium text-slate-800">
                       {order.customerName}
                     </p>
-                    <p className="text-xs text-slate-500">{order.customerPhone}</p>
+                    <p className="text-xs text-slate-500">
+                      {order.customerPhone}
+                    </p>
+                    {order.customerEmail ? (
+                      <p className="text-xs text-slate-400">
+                        {order.customerEmail}
+                      </p>
+                    ) : null}
                   </td>
                   <td className="px-4 py-3 font-semibold text-slate-800">
                     {formatPriceFromEur(order.totalEur)}

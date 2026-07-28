@@ -6,6 +6,9 @@ import {
   readAllOrders,
 } from "@/lib/orders-store";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(request: Request) {
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
@@ -17,9 +20,20 @@ export async function GET(request: Request) {
       countNewOrders(),
       getLatestNewOrderId(),
     ]);
-    return NextResponse.json({ count, latestId });
+    return NextResponse.json(
+      { count, latestId },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      }
+    );
   }
 
   const orders = await readAllOrders();
-  return NextResponse.json(orders);
+  return NextResponse.json(orders, {
+    headers: {
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+    },
+  });
 }

@@ -32,14 +32,31 @@ async function readOrdersFrom(file: string): Promise<Order[] | null> {
 }
 
 async function readAllOrdersRaw(): Promise<Order[]> {
-  const writable = ordersPath(getWritableDataDir());
-  const fromWritable = await readOrdersFrom(writable);
-  if (fromWritable) return fromWritable;
-
+  const fromWritable = await readOrdersFrom(ordersPath(getWritableDataDir()));
   const fromRepo = await readOrdersFrom(ordersPath(getReadableDataDir()));
-  if (fromRepo) return fromRepo;
 
-  return [];
+  const map = new Map<string, Order>();
+
+  for (const order of fromRepo || []) {
+    map.set(order.id, order);
+  }
+
+  for (const order of fromWritable || []) {
+    const existing = map.get(order.id);
+    if (!existing) {
+      map.set(order.id, order);
+      continue;
+    }
+    const existingTime = new Date(
+      existing.updatedAt || existing.createdAt
+    ).getTime();
+    const nextTime = new Date(order.updatedAt || order.createdAt).getTime();
+    if (nextTime >= existingTime) {
+      map.set(order.id, order);
+    }
+  }
+
+  return Array.from(map.values());
 }
 
 async function writeOrders(orders: Order[]): Promise<void> {

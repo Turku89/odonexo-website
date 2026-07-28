@@ -114,6 +114,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
       setItems(data.items);
       setAdminNote(data.adminNote || "");
       setMessage("Sipariş düzeltmeleri kaydedildi. Tutarlar güncellendi.");
+      window.dispatchEvent(new Event("odonexo-orders-changed"));
       router.refresh();
     } catch {
       setError("Kayıt sırasında hata oluştu");
@@ -160,6 +161,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
       setMessage(
         "Sipariş onaylandı. Müşteriye PDF ekli onay e-postası gönderildi."
       );
+      window.dispatchEvent(new Event("odonexo-orders-changed"));
       router.refresh();
     } catch {
       setError("Onay işlemi başarısız");
