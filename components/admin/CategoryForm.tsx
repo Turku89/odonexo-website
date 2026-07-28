@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Save, ArrowLeft, Upload, X, Languages } from "lucide-react";
 import type { Category } from "@/lib/types/category";
 import { translateText } from "@/lib/translate";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface CategoryFormProps {
   category?: Category;
@@ -30,6 +31,7 @@ function slugify(text: string) {
 
 export default function CategoryForm({ category, mode }: CategoryFormProps) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [translatingEn, setTranslatingEn] = useState(false);
@@ -189,10 +191,8 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
 
       <div className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-6 space-y-5">
         <div>
-          <h2 className="font-semibold text-slate-800">Arnavutça (kaynak) *</h2>
-          <p className="mt-1 text-xs text-slate-500">
-            Önce Arnavutça girin; İngilizce öneri buradan üretilir.
-          </p>
+          <h2 className="font-semibold text-slate-800">{t.admin.sourceSq} *</h2>
+          <p className="mt-1 text-xs text-slate-500">{t.admin.suggestFromSq}</p>
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Kategori Adı (Arnavutça) *</label>
@@ -217,10 +217,8 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
       <div className="rounded-xl border border-sky-200 bg-sky-50/40 p-6 space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="font-semibold text-slate-800">İngilizce</h2>
-            <p className="mt-1 text-xs text-slate-500">
-              Öneriyi kontrol edip düzeltin.
-            </p>
+            <h2 className="font-semibold text-slate-800">{t.admin.english}</h2>
+            <p className="mt-1 text-xs text-slate-500">{t.admin.suggestFromSq}</p>
           </div>
           <button
             type="button"
@@ -232,7 +230,7 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
             className="inline-flex items-center gap-1.5 rounded-lg border border-sky-300 bg-white px-3 py-1.5 text-xs font-medium text-sky-800 hover:bg-sky-50 disabled:opacity-40"
           >
             <Languages className="h-3.5 w-3.5" />
-            {translatingEn ? "Çevriliyor…" : "Arnavutçadan öner"}
+            {translatingEn ? t.admin.translating : t.admin.suggestFromSq}
           </button>
         </div>
         <div>
@@ -255,7 +253,7 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
-        <h2 className="font-semibold text-slate-800">Türkçe / diğer</h2>
+        <h2 className="font-semibold text-slate-800">{t.admin.turkishOptional}</h2>
         <div>
           <label className="mb-1 block text-sm font-medium">Kategori Adı (Türkçe)</label>
           <input

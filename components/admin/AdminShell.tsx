@@ -13,18 +13,21 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import OrderNotifications from "@/components/admin/OrderNotifications";
-
-const nav = [
-  { href: "/admin", label: "Panel", icon: LayoutDashboard },
-  { href: "/admin/orders", label: "Gelen Siparişler", icon: ShoppingBag },
-  { href: "/admin/products", label: "Ürünler", icon: Package },
-  { href: "/admin/categories", label: "Kategoriler", icon: FolderOpen },
-  { href: "/admin/settings", label: "Ayarlar", icon: Phone },
-];
+import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { t } = useLanguage();
+
+  const nav = [
+    { href: "/admin", label: t.admin.navPanel, icon: LayoutDashboard },
+    { href: "/admin/orders", label: t.admin.navOrders, icon: ShoppingBag },
+    { href: "/admin/products", label: t.admin.navProducts, icon: Package },
+    { href: "/admin/categories", label: t.admin.navCategories, icon: FolderOpen },
+    { href: "/admin/settings", label: t.admin.navSettings, icon: Phone },
+  ];
 
   const handleLogout = async () => {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -37,7 +40,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       <aside className="hidden w-64 flex-shrink-0 flex-col bg-slate-900 text-white md:flex">
         <div className="border-b border-white/10 px-6 py-5">
           <p className="text-lg font-bold">odonexo</p>
-          <p className="text-xs text-slate-400">Yönetim Paneli</p>
+          <p className="text-xs text-slate-400">{t.admin.panel}</p>
         </div>
 
         <nav className="flex-1 space-y-1 p-4">
@@ -70,14 +73,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-300 hover:bg-white/10 hover:text-white"
           >
             <ExternalLink className="h-4 w-4" />
-            Siteyi Görüntüle
+            {t.admin.viewSite}
           </Link>
           <button
             onClick={handleLogout}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-300 hover:bg-white/10 hover:text-white"
           >
             <LogOut className="h-4 w-4" />
-            Çıkış Yap
+            {t.admin.logout}
           </button>
         </div>
       </aside>
@@ -88,29 +91,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             <div className="md:hidden">
               <p className="font-bold text-slate-900">odonexo Admin</p>
             </div>
-            <nav className="hidden flex-1 items-center gap-1 overflow-x-auto md:hidden">
-              {nav.map(({ href, label, icon: Icon }) => {
-                const active =
-                  href === "/admin"
-                    ? pathname === "/admin"
-                    : pathname.startsWith(href);
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium ${
-                      active
-                        ? "bg-brand text-white"
-                        : "text-slate-600 hover:bg-slate-100"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {label}
-                  </Link>
-                );
-              })}
-            </nav>
             <div className="ml-auto flex items-center gap-2">
+              <LanguageSwitcher />
               <OrderNotifications />
               {pathname.startsWith("/admin/categories") ? (
                 <Link
@@ -118,7 +100,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                   className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
                 >
                   <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Yeni Kategori</span>
+                  <span className="hidden sm:inline">{t.admin.newCategory}</span>
                 </Link>
               ) : pathname.startsWith("/admin/orders") ? null : (
                 <Link
@@ -126,7 +108,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                   className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
                 >
                   <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Yeni Ürün</span>
+                  <span className="hidden sm:inline">{t.admin.newProduct}</span>
                 </Link>
               )}
             </div>

@@ -3,9 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
+import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,26 +28,29 @@ export default function AdminLoginPage() {
       router.push("/admin");
       router.refresh();
     } else {
-      setError("Şifre hatalı");
+      setError(t.admin.loginError);
     }
     setLoading(false);
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-blue-700 px-4">
+      <div className="absolute right-4 top-4">
+        <LanguageSwitcher />
+      </div>
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-muted">
             <Lock className="h-6 w-6 text-brand" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Yönetim Paneli</h1>
-          <p className="mt-1 text-sm text-slate-500">odonexo.com admin girişi</p>
+          <h1 className="text-2xl font-bold text-slate-900">{t.admin.loginTitle}</h1>
+          <p className="mt-1 text-sm text-slate-500">{t.admin.loginSubtitle}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Şifre
+              {t.admin.password}
             </label>
             <input
               type="password"
@@ -52,7 +58,6 @@ export default function AdminLoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
-              placeholder="Admin şifreniz"
             />
           </div>
 
@@ -67,13 +72,9 @@ export default function AdminLoginPage() {
             disabled={loading}
             className="w-full rounded-lg bg-brand py-3 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
           >
-            {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
+            {loading ? t.admin.loggingIn : t.admin.login}
           </button>
         </form>
-
-        <p className="mt-6 text-center text-xs text-slate-400">
-          Varsayılan şifre: odonexo2024
-        </p>
       </div>
     </div>
   );

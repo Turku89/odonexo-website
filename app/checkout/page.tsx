@@ -7,13 +7,14 @@ import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { useFormatPrice, useSiteSettings } from "@/lib/site-settings-context";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { LocalizedProductName } from "@/components/LocalizedProductName";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, totalPrice, clearCart } = useCart();
   const formatPrice = useFormatPrice();
   const settings = useSiteSettings();
-  const { t, getProductName } = useLanguage();
+  const { t } = useLanguage();
 
   const [form, setForm] = useState({
     customerName: "",
@@ -208,7 +209,7 @@ export default function CheckoutPage() {
               {items.map(({ product, quantity }) => (
                 <li key={product.id} className="flex justify-between gap-2">
                   <span className="text-neutral line-clamp-1">
-                    {getProductName(product)} × {quantity}
+                    <LocalizedProductName product={product} /> × {quantity}
                   </span>
                   <span className="font-medium whitespace-nowrap">
                     {formatPrice(product.price * quantity)}

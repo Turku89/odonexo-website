@@ -16,6 +16,7 @@ import { useFormatPrice } from "@/lib/site-settings-context";
 import { nextSku } from "@/lib/sku";
 import { parseDecimal, sanitizeDecimalInput } from "@/lib/parse-decimal";
 import { translateText } from "@/lib/translate";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface ProductFormProps {
   product?: Product;
@@ -54,6 +55,7 @@ export default function ProductForm({
   existingSkus = [],
 }: ProductFormProps) {
   const router = useRouter();
+  const { t } = useLanguage();
   const formatPrice = useFormatPrice();
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -411,9 +413,9 @@ export default function ProductForm({
 
       <div className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-6 space-y-5">
         <div>
-          <h2 className="font-semibold text-slate-800">Arnavutça (kaynak dil) *</h2>
+          <h2 className="font-semibold text-slate-800">{t.admin.sourceSq} *</h2>
           <p className="mt-1 text-xs text-slate-500">
-            Ürünü önce Arnavutça girin. İngilizce ve Türkçe alanlar buradan önerilir; kaydetmeden önce kontrol edin.
+            {t.admin.sourceSq}
           </p>
         </div>
 
@@ -450,10 +452,8 @@ export default function ProductForm({
       <div className="rounded-xl border border-sky-200 bg-sky-50/40 p-6 space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="font-semibold text-slate-800">İngilizce (öneri + düzenleme)</h2>
-            <p className="mt-1 text-xs text-slate-500">
-              Arnavutçadan otomatik öneri üretilir. Metni kontrol edip düzeltin; marka/model adlarını koruyun.
-            </p>
+            <h2 className="font-semibold text-slate-800">{t.admin.english}</h2>
+            <p className="mt-1 text-xs text-slate-500">{t.admin.suggestFromSq}</p>
           </div>
           <button
             type="button"
@@ -465,7 +465,7 @@ export default function ProductForm({
             className="inline-flex items-center gap-1.5 rounded-lg border border-sky-300 bg-white px-3 py-1.5 text-xs font-medium text-sky-800 hover:bg-sky-50 disabled:opacity-40"
           >
             <Languages className="h-3.5 w-3.5" />
-            {translatingEn ? "Çevriliyor…" : "Arnavutçadan öner"}
+            {translatingEn ? t.admin.translating : t.admin.suggestFromSq}
           </button>
         </div>
 
@@ -495,10 +495,8 @@ export default function ProductForm({
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="font-semibold text-slate-800">Türkçe (isteğe bağlı)</h2>
-            <p className="mt-1 text-xs text-slate-500">
-              Site Türkçe seçildiğinde kullanılır. Boş bırakılırsa kayıtta Arnavutça/İngilizce yedeklenir.
-            </p>
+            <h2 className="font-semibold text-slate-800">{t.admin.turkishOptional}</h2>
+            <p className="mt-1 text-xs text-slate-500">{t.admin.turkishOptional}</p>
           </div>
           <button
             type="button"
@@ -510,7 +508,7 @@ export default function ProductForm({
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40"
           >
             <Languages className="h-3.5 w-3.5" />
-            {translatingTr ? "Çevriliyor…" : "Arnavutçadan öner"}
+            {translatingTr ? t.admin.translating : t.admin.suggestFromSq}
           </button>
         </div>
 
