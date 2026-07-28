@@ -67,6 +67,15 @@ function normalizeSettings(raw: LegacySiteSettings): SiteSettings {
       process.env.TELEGRAM_CHAT_ID?.trim() ||
       raw.telegramChatId ||
       "",
+    smtpHost: process.env.SMTP_HOST?.trim() || raw.smtpHost || "",
+    smtpPort: Number(process.env.SMTP_PORT || raw.smtpPort || 587) || 587,
+    smtpUser: process.env.SMTP_USER?.trim() || raw.smtpUser || "",
+    smtpPass: process.env.SMTP_PASS?.trim() || raw.smtpPass || "",
+    smtpFrom:
+      process.env.SMTP_FROM?.trim() ||
+      raw.smtpFrom ||
+      raw.email ||
+      "",
     updatedAt: raw.updatedAt,
   };
 }
@@ -113,6 +122,15 @@ export async function updateSiteSettings(
     telegramChatId: process.env.TELEGRAM_CHAT_ID?.trim()
       ? currentRaw.telegramChatId || ""
       : updated.telegramChatId,
+    smtpHost: process.env.SMTP_HOST?.trim()
+      ? currentRaw.smtpHost || ""
+      : updated.smtpHost,
+    smtpUser: process.env.SMTP_USER?.trim()
+      ? currentRaw.smtpUser || ""
+      : updated.smtpUser,
+    smtpPass: process.env.SMTP_PASS?.trim()
+      ? currentRaw.smtpPass || ""
+      : updated.smtpPass,
   };
 
   const dir = getWritableDataDir();

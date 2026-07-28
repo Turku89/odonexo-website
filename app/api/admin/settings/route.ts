@@ -37,6 +37,11 @@ export async function PUT(request: Request) {
     telegramChatId: body.telegramChatId?.trim()
       ? body.telegramChatId.trim()
       : current.telegramChatId,
+    smtpHost: body.smtpHost ?? "",
+    smtpPort: Number(body.smtpPort) || 587,
+    smtpUser: body.smtpUser ?? "",
+    smtpPass: body.smtpPass?.trim() ? body.smtpPass.trim() : current.smtpPass,
+    smtpFrom: body.smtpFrom ?? body.email ?? "",
   });
 
   revalidatePath("/", "layout");

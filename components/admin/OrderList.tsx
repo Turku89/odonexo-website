@@ -9,13 +9,13 @@ import { Eye, PackageCheck, ShoppingBag } from "lucide-react";
 const statusLabel: Record<OrderStatus, string> = {
   new: "Yeni",
   seen: "Görüldü",
-  completed: "Tamamlandı",
+  approved: "Onaylandı",
 };
 
 const statusClass: Record<OrderStatus, string> = {
   new: "bg-red-50 text-red-700 ring-red-100",
   seen: "bg-amber-50 text-amber-700 ring-amber-100",
-  completed: "bg-green-50 text-green-700 ring-green-100",
+  approved: "bg-green-50 text-green-700 ring-green-100",
 };
 
 export default function OrderList() {
@@ -46,7 +46,7 @@ export default function OrderList() {
             ["all", "Tümü"],
             ["new", "Yeni"],
             ["seen", "Görüldü"],
-            ["completed", "Tamamlandı"],
+            ["approved", "Onaylandı"],
           ] as const
         ).map(([key, label]) => (
           <button

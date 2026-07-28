@@ -1,17 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
 
-const POLL_MS = 12_000;
+const POLL_MS = 10_000;
 const STORAGE_KEY = "odonexo-orders-last-seen-count";
 
 export default function OrderNotifications() {
   const pathname = usePathname();
+  const router = useRouter();
   const [newCount, setNewCount] = useState(0);
-  const [toast, setToast] = useState<string | null>(null);
+  const [latestId, setLatestId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; orderId: string | null } | null>(
+    null
+  );
   const knownCount = useRef<number | null>(null);
   const audioCtx = useRef<AudioContext | null>(null);
 
@@ -24,6 +27,7 @@ export default function OrderNotifications() {
         if (!res.ok) return;
         const data = await res.json();
         const count = Number(data.count) || 0;
+        const id = typeof data.latestId === "string" ? data.latestId : null;
         if (cancelled) return;
 
         if (knownCount.current === null) {
@@ -33,11 +37,13 @@ export default function OrderNotifications() {
 
         if (count > (knownCount.current ?? 0)) {
           const diff = count - (knownCount.current ?? 0);
-          setToast(
-            diff === 1
-              ? "Yeni bir sipariş geldi!"
-              : `${diff} yeni sipariş geldi!`
-          );
+          setToast({
+            message:
+              diff === 1
+                ? "Yeni bir sipariş geldi!"
+                : `${diff} yeni sipariş geldi!`,
+            orderId: id,
+          });
           playChime();
           if (
             typeof window !== "undefined" &&
@@ -57,6 +63,7 @@ export default function OrderNotifications() {
         knownCount.current = count;
         sessionStorage.setItem(STORAGE_KEY, String(count));
         setNewCount(count);
+        setLatestId(id);
       } catch {
         /* ignore */
       }
@@ -72,7 +79,7 @@ export default function OrderNotifications() {
 
   useEffect(() => {
     if (!toast) return;
-    const t = window.setTimeout(() => setToast(null), 6000);
+    const t = window.setTimeout(() => setToast(null), 10000);
     return () => window.clearTimeout(t);
   }, [toast]);
 
@@ -99,18 +106,28 @@ export default function OrderNotifications() {
     }
   };
 
-  const requestPermission = async () => {
-    if (typeof window === "undefined" || !("Notification" in window)) return;
-    if (Notification.permission === "default") {
-      await Notification.requestPermission();
+  const openOrders = (orderId?: string | null) => {
+    if (
+      typeof window !== "undefined" &&
+      "Notification" in window &&
+      Notification.permission === "default"
+    ) {
+      void Notification.requestPermission();
     }
+    const href = orderId
+      ? `/admin/orders/${orderId}`
+      : latestId
+        ? `/admin/orders/${latestId}`
+        : "/admin/orders";
+    router.push(href);
+    setToast(null);
   };
 
   return (
     <>
-      <Link
-        href="/admin/orders"
-        onClick={requestPermission}
+      <button
+        type="button"
+        onClick={() => openOrders(latestId)}
         className="relative inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
         title="Gelen siparişler"
       >
@@ -121,18 +138,19 @@ export default function OrderNotifications() {
             {newCount > 99 ? "99+" : newCount}
           </span>
         )}
-      </Link>
+      </button>
 
       {toast && (
-        <div className="fixed bottom-6 right-6 z-[200] max-w-sm animate-in rounded-xl border border-brand/20 bg-white p-4 shadow-xl">
-          <p className="text-sm font-semibold text-slate-900">{toast}</p>
-          <Link
-            href="/admin/orders"
-            className="mt-2 inline-block text-sm font-medium text-brand hover:underline"
-          >
-            Siparişleri gör →
-          </Link>
-        </div>
+        <button
+          type="button"
+          onClick={() => openOrders(toast.orderId)}
+          className="fixed bottom-6 right-6 z-[200] max-w-sm cursor-pointer rounded-xl border border-brand/20 bg-white p-4 text-left shadow-xl hover:border-brand/40"
+        >
+          <p className="text-sm font-semibold text-slate-900">{toast.message}</p>
+          <p className="mt-2 text-sm font-medium text-brand">
+            Siparişi açmak için tıklayın →
+          </p>
+        </button>
       )}
     </>
   );

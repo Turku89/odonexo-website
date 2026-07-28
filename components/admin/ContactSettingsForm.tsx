@@ -38,9 +38,15 @@ export default function ContactSettingsForm({
     shippingCostEur: settings.shippingCostEur ?? 5,
     telegramBotToken: "",
     telegramChatId: settings.telegramChatId ?? "",
+    smtpHost: settings.smtpHost ?? "",
+    smtpPort: String(settings.smtpPort || 587),
+    smtpUser: settings.smtpUser ?? "",
+    smtpPass: "",
+    smtpFrom: settings.smtpFrom || settings.email || "",
   });
 
   const hasBotToken = Boolean(settings.telegramBotToken);
+  const hasSmtpPass = Boolean(settings.smtpPass);
 
   const update = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -223,6 +229,73 @@ export default function ContactSettingsForm({
           <Send className="h-4 w-4" />
           {testingTelegram ? "Gönderiliyor..." : "Test Mesajı Gönder"}
         </button>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
+        <h2 className="font-semibold text-slate-800">Sipariş Onay E-postası (SMTP)</h2>
+        <p className="text-sm text-slate-500">
+          &quot;Onaylandı&quot; butonuna basınca müşteriye PDF ekli e-posta bu
+          hesaptan gider. Gmail için uygulama şifresi kullanın. Vercel&apos;de
+          ayrıca <code className="text-xs">SMTP_HOST</code>,{" "}
+          <code className="text-xs">SMTP_USER</code>,{" "}
+          <code className="text-xs">SMTP_PASS</code>,{" "}
+          <code className="text-xs">SMTP_FROM</code> tanımlayabilirsiniz.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium">SMTP Host</label>
+            <input
+              value={form.smtpHost}
+              onChange={(e) => update("smtpHost", e.target.value)}
+              placeholder="smtp.gmail.com"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Port</label>
+            <input
+              value={form.smtpPort}
+              onChange={(e) => update("smtpPort", e.target.value)}
+              placeholder="587"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">SMTP Kullanıcı</label>
+            <input
+              value={form.smtpUser}
+              onChange={(e) => update("smtpUser", e.target.value)}
+              placeholder="info@odonexo.com"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">SMTP Şifre</label>
+            <input
+              type="password"
+              value={form.smtpPass}
+              onChange={(e) => update("smtpPass", e.target.value)}
+              placeholder={
+                hasSmtpPass
+                  ? "•••••••• (değiştirmek için yeni şifre)"
+                  : "Uygulama şifresi"
+              }
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-1 block text-sm font-medium">
+              Gönderen (From)
+            </label>
+            <input
+              type="email"
+              value={form.smtpFrom}
+              onChange={(e) => update("smtpFrom", e.target.value)}
+              placeholder="info@odonexo.com"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">

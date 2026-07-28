@@ -140,10 +140,19 @@ export async function buildOrderPdf(order: Order): Promise<Buffer> {
     doc
       .fillColor(BRAND)
       .fontSize(11)
-      .text("Yeni sipariş", pageWidth - PAGE_MARGIN - 110, y + 20, {
-        width: 110,
-        align: "center",
-      });
+      .text(
+        order.status === "approved"
+          ? "Onaylandı"
+          : order.status === "seen"
+            ? "İncelendi"
+            : "Yeni sipariş",
+        pageWidth - PAGE_MARGIN - 110,
+        y + 20,
+        {
+          width: 110,
+          align: "center",
+        }
+      );
 
     y += 58;
 
@@ -237,17 +246,22 @@ export async function buildOrderPdf(order: Order): Promise<Buffer> {
     y += 24;
 
     order.items.forEach((item, i) => {
-      const rowH = 28;
+      const rowH = item.note || item.unavailable ? 40 : 28;
       if (i % 2 === 0) {
         doc.rect(PAGE_MARGIN, y, contentWidth, rowH).fill("#f8fafc");
       }
 
       useRegular();
       doc.fillColor(MUTED).fontSize(9).text(String(i + 1), col.no + 6, y + 9);
-      doc.fillColor(SLATE).fontSize(9).text(item.name, col.name, y + 9, {
-        width: 210,
-        ellipsis: true,
-      });
+      doc
+        .fillColor(item.unavailable ? "#b91c1c" : SLATE)
+        .fontSize(9)
+        .text(
+          item.unavailable ? `${item.name} (STOKTA YOK)` : item.name,
+          col.name,
+          y + 9,
+          { width: 210, ellipsis: true }
+        );
       doc.fillColor(MUTED).fontSize(8).text(item.sku, col.sku, y + 10, {
         width: 80,
         ellipsis: true,
@@ -268,6 +282,14 @@ export async function buildOrderPdf(order: Order): Promise<Buffer> {
         width: pageWidth - PAGE_MARGIN - col.total,
         align: "right",
       });
+
+      if (item.note) {
+        useRegular();
+        doc
+          .fillColor("#b45309")
+          .fontSize(7)
+          .text(item.note, col.name, y + 22, { width: 300 });
+      }
 
       y += rowH;
 

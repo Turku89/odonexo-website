@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
-import { getOrderById, updateOrderStatus } from "@/lib/orders-store";
-import type { OrderStatus } from "@/lib/types/order";
+import { getOrderById, updateOrder } from "@/lib/orders-store";
+import type { OrderItem, OrderStatus } from "@/lib/types/order";
+import { normalizeOrderStatus } from "@/lib/order-helpers";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -27,13 +28,30 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
   const { id } = await params;
   const body = await request.json();
-  const status = body.status as OrderStatus;
 
-  if (!["new", "seen", "completed"].includes(status)) {
-    return NextResponse.json({ error: "Geçersiz durum" }, { status: 400 });
+  const patch: {
+    status?: OrderStatus;
+    items?: OrderItem[];
+    adminNote?: string;
+  } = {};
+
+  if (body.status !== undefined) {
+    const status = normalizeOrderStatus(body.status);
+    if (!["new", "seen", "approved"].includes(status)) {
+      return NextResponse.json({ error: "Geçersiz durum" }, { status: 400 });
+    }
+    patch.status = status;
   }
 
-  const updated = await updateOrderStatus(id, status);
+  if (Array.isArray(body.items)) {
+    patch.items = body.items;
+  }
+
+  if (body.adminNote !== undefined) {
+    patch.adminNote = String(body.adminNote);
+  }
+
+  const updated = await updateOrder(id, patch);
   if (!updated) {
     return NextResponse.json({ error: "Sipariş bulunamadı" }, { status: 404 });
   }

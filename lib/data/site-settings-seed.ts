@@ -14,4 +14,9 @@ export const defaultSiteSettings: SiteSettings = {
   shippingCostEur: 5,
   telegramBotToken: "",
   telegramChatId: "",
+  smtpHost: "",
+  smtpPort: 587,
+  smtpUser: "",
+  smtpPass: "",
+  smtpFrom: "",
 };

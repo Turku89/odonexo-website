@@ -12,6 +12,12 @@ export interface SiteSettings {
   shippingCostEur: number;
   telegramBotToken: string;
   telegramChatId: string;
+  /** Sipariş onayı e-postası için SMTP */
+  smtpHost: string;
+  smtpPort: number;
+  smtpUser: string;
+  smtpPass: string;
+  smtpFrom: string;
   updatedAt?: string;
 }
 
@@ -19,13 +25,27 @@ export type SiteSettingsInput = Omit<SiteSettings, "updatedAt">;
 
 export type PublicSiteSettings = Omit<
   SiteSettings,
-  "telegramBotToken" | "telegramChatId"
+  | "telegramBotToken"
+  | "telegramChatId"
+  | "smtpHost"
+  | "smtpPort"
+  | "smtpUser"
+  | "smtpPass"
+  | "smtpFrom"
 >;
 
 export function toPublicSiteSettings(
   settings: SiteSettings
 ): PublicSiteSettings {
-  const { telegramBotToken: _t, telegramChatId: _c, ...publicSettings } =
-    settings;
+  const {
+    telegramBotToken: _t,
+    telegramChatId: _c,
+    smtpHost: _h,
+    smtpPort: _p,
+    smtpUser: _u,
+    smtpPass: _pw,
+    smtpFrom: _f,
+    ...publicSettings
+  } = settings;
   return publicSettings;
 }
