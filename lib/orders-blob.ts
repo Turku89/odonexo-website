@@ -29,7 +29,10 @@ export async function readOrdersFromBlob(): Promise<Order[] | null> {
 
     const res = await fetch(exact.url, {
       cache: "no-store",
-      headers: { "Cache-Control": "no-cache" },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Cache-Control": "no-cache",
+      },
     });
     if (!res.ok) return null;
 
@@ -41,14 +44,14 @@ export async function readOrdersFromBlob(): Promise<Order[] | null> {
   }
 }
 
-/** Sipariş listesini Blob'a yaz (overwrite). */
+/** Sipariş listesini Blob'a yaz (overwrite). Private — müşteri verisi. */
 export async function writeOrdersToBlob(orders: Order[]): Promise<boolean> {
   const token = blobToken();
   if (!token) return false;
 
   try {
     await put(BLOB_PATH, JSON.stringify(orders, null, 2), {
-      access: "public",
+      access: "private",
       addRandomSuffix: false,
       allowOverwrite: true,
       contentType: "application/json",
