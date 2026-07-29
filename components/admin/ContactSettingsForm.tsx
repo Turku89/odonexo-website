@@ -6,6 +6,7 @@ import { Save, ArrowLeft } from "lucide-react";
 import type { SiteSettings } from "@/lib/types/site-settings";
 import { toPublicSiteSettings } from "@/lib/types/site-settings";
 import { useUpdateSiteSettings } from "@/lib/site-settings-context";
+import { useLanguage } from "@/lib/i18n/language-context";
 import { Send } from "lucide-react";
 
 interface ContactSettingsFormProps {
@@ -16,6 +17,7 @@ export default function ContactSettingsForm({
   settings,
 }: ContactSettingsFormProps) {
   const router = useRouter();
+  const { t } = useLanguage();
   const updateSiteSettings = useUpdateSiteSettings();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -72,7 +74,7 @@ export default function ContactSettingsForm({
       router.refresh();
     } else {
       const data = await res.json();
-      setError(data.error || "Kayıt başarısız");
+      setError(data.error || t.admin.saveFailed);
     }
     setSaving(false);
   };
@@ -94,12 +96,12 @@ export default function ContactSettingsForm({
       const data = await testRes.json();
 
       if (testRes.ok) {
-        setTelegramTestMsg("Test mesajı gönderildi! Telegram'ı kontrol edin.");
+        setTelegramTestMsg(t.admin.telegramTestOk);
       } else {
-        setError(data.error || "Telegram testi başarısız");
+        setError(data.error || t.admin.telegramTestFail);
       }
     } catch {
-      setError("Telegram test isteği başarısız (ağ veya zaman aşımı).");
+      setError(t.admin.telegramTestNetwork);
     } finally {
       setTestingTelegram(false);
     }
@@ -113,14 +115,12 @@ export default function ContactSettingsForm({
         className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-brand"
       >
         <ArrowLeft className="h-4 w-4" />
-        Geri
+        {t.admin.back}
       </button>
 
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Site Ayarları</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          İletişim bilgileri, para birimi ve sosyal medya linklerini yönetin
-        </p>
+        <h1 className="text-2xl font-bold text-slate-900">{t.admin.settingsTitle}</h1>
+        <p className="mt-1 text-sm text-slate-500">{t.admin.settingsSubtitle}</p>
       </div>
 
       {error && (
@@ -128,18 +128,16 @@ export default function ContactSettingsForm({
       )}
       {success && (
         <p className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
-          Site ayarları kaydedildi.
+          {t.admin.settingsSaved}
         </p>
       )}
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
-        <h2 className="font-semibold text-slate-800">Kargo (Euro)</h2>
-        <p className="text-sm text-slate-500">
-          Tüm ürün fiyatları Euro (€) cinsinden kaydedilir ve gösterilir.
-        </p>
+        <h2 className="font-semibold text-slate-800">{t.admin.shippingSection}</h2>
+        <p className="text-sm text-slate-500">{t.admin.currencyHint}</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium">Ücretsiz kargo eşiği (€)</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.freeShippingMin}</label>
             <input
               type="text"
               inputMode="decimal"
@@ -155,7 +153,7 @@ export default function ContactSettingsForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Kargo ücreti (€)</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.shippingCost}</label>
             <input
               type="text"
               inputMode="decimal"
@@ -174,23 +172,8 @@ export default function ContactSettingsForm({
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
-        <h2 className="font-semibold text-slate-800">Telegram Sipariş Bildirimi</h2>
-        <p className="text-sm text-slate-500">
-          Yeni sipariş geldiğinde Telegram botunuz üzerinden detaylı bildirim
-          alırsınız. Canlı sitede (Vercel) token ve chat ID&apos;yi Environment
-          Variables olarak da ekleyin:{" "}
-          <code className="text-xs">TELEGRAM_BOT_TOKEN</code>,{" "}
-          <code className="text-xs">TELEGRAM_CHAT_ID</code>. Bot için{" "}
-          <a
-            href="https://t.me/BotFather"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-brand hover:underline"
-          >
-            @BotFather
-          </a>{" "}
-          kullanın.
-        </p>
+        <h2 className="font-semibold text-slate-800">{t.admin.telegramSection}</h2>
+        <p className="text-sm text-slate-500">{t.admin.telegramHint}</p>
         {telegramTestMsg && (
           <p className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
             {telegramTestMsg}
@@ -198,26 +181,28 @@ export default function ContactSettingsForm({
         )}
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm font-medium">Bot Token</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.botToken}</label>
             <input
               type="password"
               value={form.telegramBotToken}
               onChange={(e) => update("telegramBotToken", e.target.value)}
-              placeholder={hasBotToken ? "•••••••• (değiştirmek için yeni token)" : "123456:ABC-DEF..."}
+              placeholder={
+                hasBotToken
+                  ? t.admin.tokenPlaceholderChange
+                  : "123456:ABC-DEF..."
+              }
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm font-medium">Chat ID</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.chatId}</label>
             <input
               value={form.telegramChatId}
               onChange={(e) => update("telegramChatId", e.target.value)}
               placeholder="-1001234567890 veya 123456789"
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             />
-            <p className="mt-1 text-xs text-slate-400">
-              Grup veya kanal için @userinfobot ile chat ID öğrenebilirsiniz
-            </p>
+            <p className="mt-1 text-xs text-slate-400">{t.admin.chatIdHint}</p>
           </div>
         </div>
         <button
@@ -227,23 +212,16 @@ export default function ContactSettingsForm({
           className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
         >
           <Send className="h-4 w-4" />
-          {testingTelegram ? "Gönderiliyor..." : "Test Mesajı Gönder"}
+          {testingTelegram ? t.admin.testingTelegram : t.admin.testTelegram}
         </button>
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
-        <h2 className="font-semibold text-slate-800">Sipariş Onay E-postası (SMTP)</h2>
-        <p className="text-sm text-slate-500">
-          &quot;Onaylandı&quot; butonuna basınca müşteriye PDF ekli e-posta bu
-          hesaptan gider. Gmail için uygulama şifresi kullanın. Vercel&apos;de
-          ayrıca <code className="text-xs">SMTP_HOST</code>,{" "}
-          <code className="text-xs">SMTP_USER</code>,{" "}
-          <code className="text-xs">SMTP_PASS</code>,{" "}
-          <code className="text-xs">SMTP_FROM</code> tanımlayabilirsiniz.
-        </p>
+        <h2 className="font-semibold text-slate-800">{t.admin.smtpSection}</h2>
+        <p className="text-sm text-slate-500">{t.admin.smtpHint}</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium">SMTP Host</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.smtpHost}</label>
             <input
               value={form.smtpHost}
               onChange={(e) => update("smtpHost", e.target.value)}
@@ -252,7 +230,7 @@ export default function ContactSettingsForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Port</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.smtpPort}</label>
             <input
               value={form.smtpPort}
               onChange={(e) => update("smtpPort", e.target.value)}
@@ -261,7 +239,7 @@ export default function ContactSettingsForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">SMTP Kullanıcı</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.smtpUser}</label>
             <input
               value={form.smtpUser}
               onChange={(e) => update("smtpUser", e.target.value)}
@@ -270,22 +248,22 @@ export default function ContactSettingsForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">SMTP Şifre</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.smtpPass}</label>
             <input
               type="password"
               value={form.smtpPass}
               onChange={(e) => update("smtpPass", e.target.value)}
               placeholder={
                 hasSmtpPass
-                  ? "•••••••• (değiştirmek için yeni şifre)"
-                  : "Uygulama şifresi"
+                  ? t.admin.smtpPassPlaceholderChange
+                  : t.admin.smtpPassPlaceholder
               }
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             />
           </div>
           <div className="sm:col-span-2">
             <label className="mb-1 block text-sm font-medium">
-              Gönderen (From)
+              {t.admin.smtpFrom}
             </label>
             <input
               type="email"
@@ -299,13 +277,11 @@ export default function ContactSettingsForm({
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
-        <h2 className="font-semibold text-slate-800">Telefon & Mesajlaşma</h2>
-        <p className="text-sm text-slate-500">
-          Tek bir değer girin; tüm dillerde aynı bilgiler gösterilir.
-        </p>
+        <h2 className="font-semibold text-slate-800">{t.admin.phoneSection}</h2>
+        <p className="text-sm text-slate-500">{t.admin.phoneHint}</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium">Telefon</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.phoneLabel}</label>
             <input
               value={form.phone}
               onChange={(e) => update("phone", e.target.value)}
@@ -314,17 +290,17 @@ export default function ContactSettingsForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">WhatsApp numarası</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.whatsappLabel}</label>
             <input
               value={form.whatsapp}
               onChange={(e) => update("whatsapp", e.target.value)}
               placeholder="355695000000"
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             />
-            <p className="mt-1 text-xs text-slate-400">Ülke kodu ile, boşluksuz</p>
+            <p className="mt-1 text-xs text-slate-400">{t.admin.whatsappHint}</p>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Telegram</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.telegramLabel}</label>
             <input
               value={form.telegram}
               onChange={(e) => update("telegram", e.target.value)}
@@ -333,7 +309,7 @@ export default function ContactSettingsForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">E-posta</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.emailLabel}</label>
             <input
               type="email"
               value={form.email}
@@ -346,10 +322,10 @@ export default function ContactSettingsForm({
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
-        <h2 className="font-semibold text-slate-800">Adres & Çalışma Saatleri</h2>
+        <h2 className="font-semibold text-slate-800">{t.admin.addressSection}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium">Adres</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.addressLabel}</label>
             <textarea
               rows={4}
               value={form.address}
@@ -358,7 +334,7 @@ export default function ContactSettingsForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Çalışma saatleri</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.hoursLabel}</label>
             <textarea
               rows={4}
               value={form.hours}
@@ -370,13 +346,11 @@ export default function ContactSettingsForm({
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
-        <h2 className="font-semibold text-slate-800">Sosyal Medya</h2>
-        <p className="text-sm text-slate-500">
-          Footer&apos;daki ikonlar için profil linklerini girin. Boş bırakırsanız ikon görünmez.
-        </p>
+        <h2 className="font-semibold text-slate-800">{t.admin.socialSection}</h2>
+        <p className="text-sm text-slate-500">{t.admin.socialHint}</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium">Facebook</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.facebookLabel}</label>
             <input
               value={form.facebook}
               onChange={(e) => update("facebook", e.target.value)}
@@ -385,7 +359,7 @@ export default function ContactSettingsForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Instagram</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.instagramLabel}</label>
             <input
               value={form.instagram}
               onChange={(e) => update("instagram", e.target.value)}
@@ -394,7 +368,7 @@ export default function ContactSettingsForm({
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm font-medium">LinkedIn</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.linkedinLabel}</label>
             <input
               value={form.linkedin}
               onChange={(e) => update("linkedin", e.target.value)}
@@ -411,7 +385,7 @@ export default function ContactSettingsForm({
         className="inline-flex items-center gap-2 rounded-lg bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
       >
         <Save className="h-4 w-4" />
-        {saving ? "Kaydediliyor..." : "Kaydet"}
+        {saving ? t.admin.saving : t.admin.save}
       </button>
     </form>
   );

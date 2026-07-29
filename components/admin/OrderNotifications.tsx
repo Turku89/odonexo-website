@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 const POLL_MS = 10_000;
 const STORAGE_KEY = "odonexo-orders-last-seen-count";
@@ -10,6 +11,7 @@ const STORAGE_KEY = "odonexo-orders-last-seen-count";
 export default function OrderNotifications() {
   const pathname = usePathname();
   const router = useRouter();
+  const { t } = useLanguage();
   const [newCount, setNewCount] = useState(0);
   const [latestId, setLatestId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; orderId: string | null } | null>(
@@ -17,6 +19,8 @@ export default function OrderNotifications() {
   );
   const knownCount = useRef<number | null>(null);
   const audioCtx = useRef<AudioContext | null>(null);
+  const tRef = useRef(t);
+  tRef.current = t;
 
   useEffect(() => {
     let cancelled = false;
@@ -37,11 +41,12 @@ export default function OrderNotifications() {
 
         if (count > (knownCount.current ?? 0)) {
           const diff = count - (knownCount.current ?? 0);
+          const admin = tRef.current.admin;
           setToast({
             message:
               diff === 1
-                ? "Yeni bir sipariş geldi!"
-                : `${diff} yeni sipariş geldi!`,
+                ? admin.notifToastOne
+                : `${diff} ${admin.notifToastMany}`,
             orderId: id,
           });
           playChime();
@@ -50,11 +55,11 @@ export default function OrderNotifications() {
             "Notification" in window &&
             Notification.permission === "granted"
           ) {
-            new Notification("odonexo — Yeni sipariş", {
+            new Notification(admin.notifBrowserTitle, {
               body:
                 diff === 1
-                  ? "Admin panelinde yeni sipariş var."
-                  : `${diff} yeni sipariş bekliyor.`,
+                  ? admin.notifBrowserOne
+                  : `${diff} ${admin.notifBrowserMany}`,
               icon: "/logo-header.jpg",
             });
           }
@@ -79,8 +84,8 @@ export default function OrderNotifications() {
 
   useEffect(() => {
     if (!toast) return;
-    const t = window.setTimeout(() => setToast(null), 10000);
-    return () => window.clearTimeout(t);
+    const timer = window.setTimeout(() => setToast(null), 10000);
+    return () => window.clearTimeout(timer);
   }, [toast]);
 
   const playChime = () => {
@@ -129,10 +134,10 @@ export default function OrderNotifications() {
         type="button"
         onClick={() => openOrders(latestId)}
         className="relative inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-        title="Gelen siparişler"
+        title={t.admin.notifTitle}
       >
         <Bell className="h-4 w-4" />
-        <span className="hidden sm:inline">Siparişler</span>
+        <span className="hidden sm:inline">{t.admin.notifOrders}</span>
         {newCount > 0 && (
           <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
             {newCount > 99 ? "99+" : newCount}
@@ -148,7 +153,7 @@ export default function OrderNotifications() {
         >
           <p className="text-sm font-semibold text-slate-900">{toast.message}</p>
           <p className="mt-2 text-sm font-medium text-brand">
-            Siparişi açmak için tıklayın →
+            {t.admin.notifClickOpen}
           </p>
         </button>
       )}

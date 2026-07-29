@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Pencil, Trash2, Eye, EyeOff, Loader2 } from "lucide-react";
 import type { CategoryWithCount } from "@/lib/types/category";
 import CategoryVisual from "@/components/modules/CategoryVisual";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface CategoryListProps {
   categories: CategoryWithCount[];
@@ -13,6 +14,7 @@ interface CategoryListProps {
 
 export default function CategoryList({ categories: initial }: CategoryListProps) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [categories, setCategories] = useState(initial);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [toggling, setToggling] = useState<string | null>(null);
@@ -35,7 +37,7 @@ export default function CategoryList({ categories: initial }: CategoryListProps)
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`"${name}" kategorisini silmek istediğinize emin misiniz?`)) return;
+    if (!confirm(`"${name}" — ${t.admin.deleteCategoryConfirm}`)) return;
     setDeleting(id);
     const res = await fetch(`/api/admin/categories/${id}`, { method: "DELETE" });
     if (res.ok) {
@@ -51,11 +53,11 @@ export default function CategoryList({ categories: initial }: CategoryListProps)
         <table className="w-full min-w-[700px] text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-              <th className="px-4 py-3">Kategori</th>
-              <th className="px-4 py-3">Slug</th>
-              <th className="px-4 py-3">Ürün</th>
-              <th className="px-4 py-3">Durum</th>
-              <th className="px-4 py-3 text-right">İşlemler</th>
+              <th className="px-4 py-3">{t.admin.colCategory}</th>
+              <th className="px-4 py-3">{t.admin.colSlug}</th>
+              <th className="px-4 py-3">{t.admin.colProductsCount}</th>
+              <th className="px-4 py-3">{t.admin.status}</th>
+              <th className="px-4 py-3 text-right">{t.admin.actions}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -71,14 +73,16 @@ export default function CategoryList({ categories: initial }: CategoryListProps)
                     <CategoryVisual
                       icon={category.icon}
                       image={category.image}
-                      name={category.name}
+                      name={category.nameSq || category.name}
                       size="sm"
                       className="rounded-lg"
                     />
                     <div>
-                      <p className="font-medium text-slate-900">{category.name}</p>
+                      <p className="font-medium text-slate-900">
+                        {category.nameSq || category.name}
+                      </p>
                       <p className="text-xs text-slate-500 line-clamp-1">
-                        {category.description}
+                        {category.descriptionSq || category.description}
                       </p>
                     </div>
                   </div>
@@ -97,12 +101,12 @@ export default function CategoryList({ categories: initial }: CategoryListProps)
                       {category.published ? (
                         <>
                           <Eye className="h-3 w-3" />
-                          Müşteriye açık
+                          {t.admin.statusPublic}
                         </>
                       ) : (
                         <>
                           <EyeOff className="h-3 w-3" />
-                          Sadece panelde
+                          {t.admin.statusPanelOnly}
                         </>
                       )}
                     </span>
@@ -118,7 +122,7 @@ export default function CategoryList({ categories: initial }: CategoryListProps)
                         ) : (
                           <EyeOff className="h-3.5 w-3.5" />
                         )}
-                        Gizle
+                        {t.admin.hide}
                       </button>
                     ) : (
                       <button
@@ -132,7 +136,7 @@ export default function CategoryList({ categories: initial }: CategoryListProps)
                         ) : (
                           <Eye className="h-3.5 w-3.5" />
                         )}
-                        Yayınla
+                        {t.admin.publish}
                       </button>
                     )}
                   </div>
@@ -146,7 +150,12 @@ export default function CategoryList({ categories: initial }: CategoryListProps)
                       <Pencil className="h-4 w-4" />
                     </Link>
                     <button
-                      onClick={() => handleDelete(category.id, category.name)}
+                      onClick={() =>
+                        handleDelete(
+                          category.id,
+                          category.nameSq || category.name
+                        )
+                      }
                       disabled={deleting === category.id}
                       className="rounded-lg p-2 text-slate-500 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
                     >
@@ -161,7 +170,9 @@ export default function CategoryList({ categories: initial }: CategoryListProps)
       </div>
 
       {categories.length === 0 && (
-        <p className="py-12 text-center text-slate-500">Henüz kategori yok.</p>
+        <p className="py-12 text-center text-slate-500">
+          {t.admin.categoriesEmpty}
+        </p>
       )}
     </div>
   );

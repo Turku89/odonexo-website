@@ -40,7 +40,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
       try {
         const res = await fetch(`/api/admin/orders/${orderId}`);
         if (!res.ok) {
-          setError("Sipariş bulunamadı");
+          setError(t.admin.orderNotFound);
           return;
         }
         const data = (await res.json()) as Order;
@@ -64,7 +64,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
           }
         }
       } catch {
-        setError("Sipariş yüklenemedi");
+        setError(t.admin.orderLoadFail);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -74,7 +74,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
     return () => {
       cancelled = true;
     };
-  }, [orderId]);
+  }, [orderId, t.admin.orderNotFound, t.admin.orderLoadFail]);
 
   const previewTotals = useMemo(() => {
     const subtotal = items
@@ -101,6 +101,12 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
     setMessage("");
   };
 
+  const isDefaultOutOfStockNote = (note?: string) =>
+    note === t.admin.orderOutOfStock ||
+    note === "Stokta yok" ||
+    note === "Jashtë stoku" ||
+    note === "Out of stock";
+
   const saveEdits = async () => {
     if (!order) return;
     setSaving(true);
@@ -114,17 +120,17 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Kayıt başarısız");
+        setError(data.error || t.admin.saveFailed);
         return;
       }
       setOrder(data);
       setItems(data.items);
       setAdminNote(data.adminNote || "");
-      setMessage("Sipariş düzeltmeleri kaydedildi. Tutarlar güncellendi.");
+      setMessage(t.admin.orderEditsSaved);
       window.dispatchEvent(new Event("odonexo-orders-changed"));
       router.refresh();
     } catch {
-      setError("Kayıt sırasında hata oluştu");
+      setError(t.admin.orderSaveError);
     } finally {
       setSaving(false);
     }
@@ -133,7 +139,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
   const approveOrder = async () => {
     if (!order) return;
     if (!order.customerEmail?.trim()) {
-      setError("Müşteri e-postası yok; önce e-posta eklenmeli veya sipariş reddedilmeli.");
+      setError(t.admin.orderNoEmail);
       return;
     }
 
@@ -149,7 +155,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
       });
       if (!saveRes.ok) {
         const data = await saveRes.json();
-        setError(data.error || "Düzeltmeler kaydedilemedi");
+        setError(data.error || t.admin.orderEditsSaveFail);
         return;
       }
       const saved = await saveRes.json();
@@ -161,17 +167,15 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Onay / e-posta başarısız");
+        setError(data.error || t.admin.orderApproveEmailFail);
         return;
       }
       setOrder(data.order);
-      setMessage(
-        "Sipariş onaylandı. Müşteriye PDF ekli onay e-postası gönderildi."
-      );
+      setMessage(t.admin.orderApprovedMsg);
       window.dispatchEvent(new Event("odonexo-orders-changed"));
       router.refresh();
     } catch {
-      setError("Onay işlemi başarısız");
+      setError(t.admin.orderApproveFail);
     } finally {
       setApproving(false);
     }
@@ -190,7 +194,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "İptal başarısız");
+        setError(data.error || t.admin.orderCancelFail);
         return;
       }
       setOrder(data);
@@ -199,14 +203,14 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
       window.dispatchEvent(new Event("odonexo-orders-changed"));
       router.refresh();
     } catch {
-      setError("İptal işlemi başarısız");
+      setError(t.admin.orderCancelFailGeneric);
     } finally {
       setCancelling(false);
     }
   };
 
   if (loading) {
-    return <p className="text-sm text-slate-500">Yükleniyor…</p>;
+    return <p className="text-sm text-slate-500">{t.admin.loading}</p>;
   }
 
   if (error && !order) {
@@ -214,7 +218,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
       <div>
         <p className="text-sm text-red-600">{error}</p>
         <Link href="/admin/orders" className="mt-4 inline-block text-brand">
-          ← Listeye dön
+          {t.admin.orderBackListShort}
         </Link>
       </div>
     );
@@ -231,7 +235,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
         className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-brand"
       >
         <ArrowLeft className="h-4 w-4" />
-        Siparişlere dön
+        {t.admin.orderBackToList}
       </Link>
 
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -245,7 +249,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
             {order.emailSentAt ? (
               <span className="text-green-600">
                 {" "}
-                · E-posta gönderildi (
+                · {t.admin.orderEmailSent} (
                 {new Date(order.emailSentAt).toLocaleString(dateLocale)})
               </span>
             ) : null}
@@ -261,7 +265,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
                 className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
               >
                 <Save className="h-4 w-4" />
-                {saving ? "Kaydediliyor…" : "Düzeltmeleri Kaydet"}
+                {saving ? t.admin.saving : t.admin.orderSaveEdits}
               </button>
               <button
                 type="button"
@@ -270,7 +274,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
                 className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
               >
                 <CheckCircle2 className="h-4 w-4" />
-                {approving ? "Onaylanıyor…" : "Onaylandı — E-posta Gönder"}
+                {approving ? t.admin.orderApproving : t.admin.orderApprove}
               </button>
               <button
                 type="button"
@@ -299,14 +303,14 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <h2 className="font-semibold text-slate-800">Müşteri</h2>
+          <h2 className="font-semibold text-slate-800">{t.admin.orderCustomer}</h2>
           <dl className="mt-3 space-y-2 text-sm">
             <div>
-              <dt className="text-slate-400">Ad Soyad</dt>
+              <dt className="text-slate-400">{t.admin.orderFullName}</dt>
               <dd className="font-medium text-slate-800">{order.customerName}</dd>
             </div>
             <div>
-              <dt className="text-slate-400">Telefon</dt>
+              <dt className="text-slate-400">{t.admin.phoneLabel}</dt>
               <dd className="font-medium text-slate-800">
                 <a href={`tel:${order.customerPhone}`} className="text-brand">
                   {order.customerPhone}
@@ -314,22 +318,22 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
               </dd>
             </div>
             <div>
-              <dt className="text-slate-400">E-posta</dt>
+              <dt className="text-slate-400">{t.admin.emailLabel}</dt>
               <dd className="font-medium text-slate-800">
                 {order.customerEmail || (
-                  <span className="text-red-500">Yok — onay e-postası için gerekli</span>
+                  <span className="text-red-500">{t.admin.orderNoEmailNeeded}</span>
                 )}
               </dd>
             </div>
             <div>
-              <dt className="text-slate-400">Adres</dt>
+              <dt className="text-slate-400">{t.admin.addressLabel}</dt>
               <dd className="whitespace-pre-line font-medium text-slate-800">
                 {order.customerAddress}
               </dd>
             </div>
             {order.notes ? (
               <div>
-                <dt className="text-slate-400">Müşteri notu</dt>
+                <dt className="text-slate-400">{t.admin.orderCustomerNote}</dt>
                 <dd className="font-medium text-slate-800">{order.notes}</dd>
               </div>
             ) : null}
@@ -337,35 +341,35 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <h2 className="font-semibold text-slate-800">Özet</h2>
+          <h2 className="font-semibold text-slate-800">{t.admin.orderSummary}</h2>
           <dl className="mt-3 space-y-2 text-sm">
             <div className="flex justify-between">
-              <dt className="text-slate-500">Ara toplam (kayıtlı)</dt>
+              <dt className="text-slate-500">{t.admin.orderSubtotalRecorded}</dt>
               <dd>{formatPriceFromEur(order.subtotalEur)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-slate-500">Kargo</dt>
+              <dt className="text-slate-500">{t.admin.orderShipping}</dt>
               <dd>
                 {order.shippingEur === 0
-                  ? "Ücretsiz"
+                  ? t.admin.orderFree
                   : formatPriceFromEur(order.shippingEur)}
               </dd>
             </div>
             <div className="flex justify-between border-t border-slate-100 pt-2 text-base font-bold text-brand">
-              <dt>Toplam</dt>
+              <dt>{t.admin.orderTotal}</dt>
               <dd>{formatPriceFromEur(order.totalEur)}</dd>
             </div>
             {!locked && previewTotals !== order.subtotalEur && (
               <p className="text-xs text-amber-600">
-                Düzenleme sonrası ara toplam önizleme:{" "}
-                {formatPriceFromEur(previewTotals)} (kaydedince kesinleşir)
+                {t.admin.orderPreviewSubtotal}{" "}
+                {formatPriceFromEur(previewTotals)} {t.admin.orderPreviewSubtotalHint}
               </p>
             )}
           </dl>
 
           <label className="mt-4 block text-sm">
             <span className="mb-1 block font-medium text-slate-700">
-              Admin notu (müşteriye e-postada görünür)
+              {t.admin.orderAdminNote}
             </span>
             <textarea
               rows={3}
@@ -373,7 +377,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
               value={adminNote}
               onChange={(e) => setAdminNote(e.target.value)}
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-50"
-              placeholder="Örn: 1 ürün stokta olmadığı için sipariş güncellendi."
+              placeholder={t.admin.orderAdminNotePlaceholder}
             />
           </label>
         </div>
@@ -381,11 +385,8 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
         <div className="border-b border-slate-200 bg-slate-50 px-4 py-3">
-          <h2 className="font-semibold text-slate-800">Ürünler / Düzeltme</h2>
-          <p className="text-xs text-slate-500">
-            Adedi düşürebilir veya &quot;Stokta yok&quot; işaretleyebilirsiniz.
-            Tutarlar kaydet / onayda otomatik güncellenir.
-          </p>
+          <h2 className="font-semibold text-slate-800">{t.admin.orderItemsEdit}</h2>
+          <p className="text-xs text-slate-500">{t.admin.orderItemsEditHint}</p>
         </div>
         <div className="divide-y divide-slate-100">
           {items.map((item, index) => (
@@ -400,7 +401,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
                 <p className="text-xs text-slate-500">{item.sku}</p>
               </div>
               <div className="md:col-span-2">
-                <label className="text-xs text-slate-500">Adet</label>
+                <label className="text-xs text-slate-500">{t.admin.orderQty}</label>
                 <input
                   type="number"
                   min={0}
@@ -413,13 +414,13 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
                 />
               </div>
               <div className="md:col-span-2">
-                <p className="text-xs text-slate-500">Birim</p>
+                <p className="text-xs text-slate-500">{t.admin.orderUnit}</p>
                 <p className="mt-1 text-sm font-medium">
                   {formatPriceFromEur(item.unitPriceEur)}
                 </p>
               </div>
               <div className="md:col-span-2">
-                <p className="text-xs text-slate-500">Satır</p>
+                <p className="text-xs text-slate-500">{t.admin.orderLine}</p>
                 <p className="mt-1 text-sm font-semibold">
                   {formatPriceFromEur(item.lineTotalEur)}
                 </p>
@@ -435,14 +436,14 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
                         unavailable: e.target.checked,
                         quantity: e.target.checked ? 0 : Math.max(1, item.quantity),
                         note: e.target.checked
-                          ? item.note || "Stokta yok"
-                          : item.note === "Stokta yok"
+                          ? item.note || t.admin.orderOutOfStock
+                          : isDefaultOutOfStockNote(item.note)
                             ? ""
                             : item.note,
                       })
                     }
                   />
-                  Stokta yok
+                  {t.admin.orderOutOfStock}
                 </label>
               </div>
               <div className="md:col-span-12">
@@ -450,7 +451,7 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
                   disabled={locked}
                   value={item.note || ""}
                   onChange={(e) => updateItem(index, { note: e.target.value })}
-                  placeholder="Düzeltme notu (örn: 2 yerine 1 adet gönderilecek)"
+                  placeholder={t.admin.orderItemNotePlaceholder}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-50"
                 />
               </div>

@@ -88,7 +88,7 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
     const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
 
     if (res.status === 401) {
-      setError("Oturum süresi doldu. Tekrar giriş yapın.");
+      setError(t.admin.sessionExpired);
       router.push("/admin/login");
     } else if (res.ok) {
       const { url } = await res.json();
@@ -96,9 +96,9 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
     } else {
       try {
         const data = await res.json();
-        setError(data.error || "Görsel yüklenemedi");
+        setError(data.error || t.admin.uploadFailed);
       } catch {
-        setError("Görsel yüklenemedi");
+        setError(t.admin.uploadFailed);
       }
     }
 
@@ -113,7 +113,7 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
 
     const nameSq = form.nameSq.trim();
     if (!nameSq) {
-      setError("Arnavutça kategori adı zorunludur (kaynak dil).");
+      setError(t.admin.categoryNameSqRequired);
       setSaving(false);
       return;
     }
@@ -165,7 +165,7 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
       router.refresh();
     } else {
       const data = await res.json();
-      setError(data.error || "Kayıt başarısız");
+      setError(data.error || t.admin.saveFailed);
     }
     setSaving(false);
   };
@@ -178,11 +178,11 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
         className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-brand"
       >
         <ArrowLeft className="h-4 w-4" />
-        Geri
+        {t.admin.back}
       </button>
 
       <h1 className="text-2xl font-bold text-slate-900">
-        {mode === "create" ? "Yeni Kategori Ekle" : "Kategoriyi Düzenle"}
+        {mode === "create" ? t.admin.createCategory : t.admin.editCategory}
       </h1>
 
       {error && (
@@ -195,7 +195,7 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
           <p className="mt-1 text-xs text-slate-500">{t.admin.suggestFromSq}</p>
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium">Kategori Adı (Arnavutça) *</label>
+          <label className="mb-1 block text-sm font-medium">{t.admin.categoryNameSq}</label>
           <input
             required
             value={form.nameSq}
@@ -204,7 +204,7 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium">Açıklama (Arnavutça)</label>
+          <label className="mb-1 block text-sm font-medium">{t.admin.categoryDescSq}</label>
           <textarea
             rows={3}
             value={form.descriptionSq}
@@ -234,7 +234,7 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
           </button>
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium">Kategori Adı (İngilizce)</label>
+          <label className="mb-1 block text-sm font-medium">{t.admin.categoryNameEn}</label>
           <input
             value={form.nameEn}
             onChange={(e) => update("nameEn", e.target.value)}
@@ -242,7 +242,7 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium">Açıklama (İngilizce)</label>
+          <label className="mb-1 block text-sm font-medium">{t.admin.categoryDescEn}</label>
           <textarea
             rows={3}
             value={form.descriptionEn}
@@ -255,7 +255,7 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
         <h2 className="font-semibold text-slate-800">{t.admin.turkishOptional}</h2>
         <div>
-          <label className="mb-1 block text-sm font-medium">Kategori Adı (Türkçe)</label>
+          <label className="mb-1 block text-sm font-medium">{t.admin.categoryNameTr}</label>
           <input
             value={form.name}
             onChange={(e) => update("name", e.target.value)}
@@ -264,7 +264,7 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium">Slug</label>
+          <label className="mb-1 block text-sm font-medium">{t.admin.slugLabel}</label>
           <input
             value={form.slug}
             onChange={(e) => update("slug", e.target.value)}
@@ -273,7 +273,7 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium">Açıklama (Türkçe)</label>
+          <label className="mb-1 block text-sm font-medium">{t.admin.categoryDescTr}</label>
           <textarea
             rows={3}
             value={form.description}
@@ -283,12 +283,12 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium">Kategori Görseli</label>
+          <label className="mb-2 block text-sm font-medium">{t.admin.categoryImage}</label>
           {form.image ? (
             <div className="relative mb-3 h-40 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
               <Image
                 src={form.image}
-                alt={form.nameSq || form.name || "Kategori"}
+                alt={form.nameSq || form.name || t.admin.categoryFallback}
                 fill
                 className="object-cover"
                 sizes="600px"
@@ -297,7 +297,7 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
                 type="button"
                 onClick={() => update("image", "")}
                 className="absolute right-2 top-2 rounded-full bg-white/90 p-1.5 text-slate-600 shadow hover:bg-white hover:text-red-500"
-                aria-label="Görseli kaldır"
+                aria-label={t.admin.removeImage}
               >
                 <X className="h-4 w-4" />
               </button>
@@ -305,7 +305,11 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
           ) : null}
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
             <Upload className="h-4 w-4" />
-            {uploading ? "Yükleniyor..." : form.image ? "Görseli Değiştir" : "Resim Yükle"}
+            {uploading
+              ? t.admin.uploading
+              : form.image
+                ? t.admin.changeImage
+                : t.admin.uploadImageBtn}
             <input
               type="file"
               accept="image/*"
@@ -314,13 +318,11 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
               onChange={handleUpload}
             />
           </label>
-          <p className="mt-1.5 text-xs text-slate-400">
-            JPG, PNG veya WebP. Görsel yoksa aşağıdaki ikon kullanılır.
-          </p>
+          <p className="mt-1.5 text-xs text-slate-400">{t.admin.categoryImageHint}</p>
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-medium">İkon (görsel yoksa)</label>
+          <label className="mb-2 block text-sm font-medium">{t.admin.iconLabel}</label>
           <div className="flex flex-wrap gap-2">
             {ICON_OPTIONS.map((icon) => (
               <button
@@ -346,7 +348,7 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
             onChange={(e) => update("published", e.target.checked)}
             className="rounded border-slate-300 text-brand focus:ring-brand"
           />
-          Sitede yayınla (müşteriler görsün)
+          {t.admin.publishSiteCat}
         </label>
       </div>
 
@@ -356,7 +358,7 @@ export default function CategoryForm({ category, mode }: CategoryFormProps) {
         className="inline-flex items-center gap-2 rounded-lg bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
       >
         <Save className="h-4 w-4" />
-        {saving ? "Kaydediliyor..." : "Kaydet"}
+        {saving ? t.admin.saving : t.admin.save}
       </button>
     </form>
   );

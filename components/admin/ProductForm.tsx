@@ -212,9 +212,9 @@ export default function ProductForm({
     if (!res.ok) {
       try {
         const data = await res.json();
-        setError(data.error || "Görsel yüklenemedi");
+        setError(data.error || t.admin.uploadFailed);
       } catch {
-        setError("Görsel yüklenemedi");
+        setError(t.admin.uploadFailed);
       }
       return { url: null };
     }
@@ -241,12 +241,12 @@ export default function ProductForm({
     }
 
     if (unauthorized) {
-      setError("Oturum süresi doldu. Tekrar giriş yapın.");
+      setError(t.admin.sessionExpired);
       router.push("/admin/login");
     } else if (uploaded.length) {
       setForm((prev) => ({ ...prev, images: [...prev.images, ...uploaded] }));
     } else {
-      setError((prev) => prev || "Görsel yüklenemedi");
+      setError((prev) => prev || t.admin.uploadFailed);
     }
     setUploading(false);
     e.target.value = "";
@@ -285,7 +285,7 @@ export default function ProductForm({
 
     const nameSq = form.nameSq.trim();
     if (!nameSq) {
-      setError("Arnavutça ürün adı zorunludur (kaynak dil).");
+      setError(t.admin.nameSqRequired);
       setSaving(false);
       return;
     }
@@ -295,7 +295,7 @@ export default function ProductForm({
     const discount = Number(form.discountPercent) || 0;
 
     if (!Number.isFinite(listPrice) || listPrice < 0) {
-      setError("Geçerli bir fiyat girin (ör. 1.5 veya 1,5).");
+      setError(t.admin.invalidPrice);
       setSaving(false);
       return;
     }
@@ -306,7 +306,7 @@ export default function ProductForm({
 
     if (isSaleBadge) {
       if (discount <= 0 || discount >= 100) {
-        setError("İndirim rozeti için geçerli bir indirim yüzdesi girin (1–99).");
+        setError(t.admin.invalidDiscount);
         setSaving(false);
         return;
       }
@@ -314,7 +314,7 @@ export default function ProductForm({
       price = calcSalePrice(listPrice, discount);
       discountPercent = discount;
       if (price >= originalPrice) {
-        setError("İndirimli fiyat liste fiyatından düşük olmalıdır.");
+        setError(t.admin.salePriceMustBeLower);
         setSaving(false);
         return;
       }
@@ -387,7 +387,7 @@ export default function ProductForm({
       router.refresh();
     } else {
       const data = await res.json();
-      setError(data.error || "Kayıt başarısız");
+      setError(data.error || t.admin.saveFailed);
     }
     setSaving(false);
   };
@@ -400,11 +400,11 @@ export default function ProductForm({
         className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-brand"
       >
         <ArrowLeft className="h-4 w-4" />
-        Geri
+        {t.admin.back}
       </button>
 
       <h1 className="text-2xl font-bold text-slate-900">
-        {mode === "create" ? "Yeni Ürün Ekle" : "Ürünü Düzenle"}
+        {mode === "create" ? t.admin.createProduct : t.admin.editProduct}
       </h1>
 
       {error && (
@@ -421,7 +421,7 @@ export default function ProductForm({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm font-medium">Ürün Adı (Arnavutça) *</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.nameSqLabel}</label>
             <input
               required
               value={form.nameSq}
@@ -434,11 +434,11 @@ export default function ProductForm({
               className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             />
             <p className="mt-1.5 text-xs text-slate-400">
-              Adı yazıp alandan çıktığınızda SKU otomatik oluşur.
+              {t.admin.skuAutoHint}
             </p>
           </div>
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm font-medium">Açıklama (Arnavutça)</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.descSqLabel}</label>
             <textarea
               rows={4}
               value={form.descriptionSq}
@@ -471,21 +471,21 @@ export default function ProductForm({
 
         <div className="grid gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium">Ürün Adı (İngilizce)</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.nameEnLabel}</label>
             <input
               value={form.nameEn}
               onChange={(e) => update("nameEn", e.target.value)}
-              placeholder="Öneri için yukarıdaki butonu kullanın"
+              placeholder={t.admin.suggestPlaceholder}
               className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Açıklama (İngilizce)</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.descEnLabel}</label>
             <textarea
               rows={4}
               value={form.descriptionEn}
               onChange={(e) => update("descriptionEn", e.target.value)}
-              placeholder="Öneriyi kontrol edip gerekirse düzeltin"
+              placeholder={t.admin.reviewSuggestPlaceholder}
               className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 resize-none"
             />
           </div>
@@ -514,7 +514,7 @@ export default function ProductForm({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm font-medium">Ürün Adı (Türkçe)</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.nameTrLabel}</label>
             <input
               value={form.name}
               onChange={(e) => update("name", e.target.value)}
@@ -522,7 +522,7 @@ export default function ProductForm({
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm font-medium">Açıklama (Türkçe)</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.descTrLabel}</label>
             <textarea
               rows={3}
               value={form.description}
@@ -531,7 +531,7 @@ export default function ProductForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Slug</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.slugLabel}</label>
             <input
               value={form.slug}
               onChange={(e) => update("slug", e.target.value)}
@@ -539,7 +539,7 @@ export default function ProductForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">SKU *</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.skuLabel}</label>
             <div className="flex gap-2">
               <input
                 required
@@ -556,7 +556,7 @@ export default function ProductForm({
                   onClick={() => regenerateSku(form.nameSq || form.name)}
                   disabled={!form.nameSq.trim() && !form.name.trim()}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40"
-                  title="SKU yeniden oluştur"
+                  title={t.admin.skuRegenerate}
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
                 </button>
@@ -564,7 +564,7 @@ export default function ProductForm({
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Kategori *</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.categoryLabel}</label>
             <select
               value={form.categorySlug}
               onChange={(e) => update("categorySlug", e.target.value)}
@@ -578,27 +578,27 @@ export default function ProductForm({
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Rozet</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.badgeLabel}</label>
             <select
               value={form.badge}
               onChange={(e) => update("badge", e.target.value)}
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             >
-              <option value="">Yok</option>
-              <option value="new">Yeni</option>
-              <option value="sale">İndirim</option>
-              <option value="bestseller">Çok Satan</option>
+              <option value="">{t.admin.badgeNone}</option>
+              <option value="new">{t.admin.badgeNew}</option>
+              <option value="sale">{t.admin.badgeSale}</option>
+              <option value="bestseller">{t.admin.badgeBestseller}</option>
             </select>
           </div>
         </div>
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
-        <h2 className="font-semibold text-slate-800">Fiyat & Stok</h2>
+        <h2 className="font-semibold text-slate-800">{t.admin.priceStock}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium">
-              {form.badge === "sale" ? "Liste Fiyatı (€) *" : "Fiyat (€) *"}
+              {form.badge === "sale" ? t.admin.listPrice : t.admin.priceLabel}
             </label>
             <input
               required
@@ -616,7 +616,7 @@ export default function ProductForm({
 
           {form.badge === "sale" && (
             <div>
-              <label className="mb-1 block text-sm font-medium">İndirim (%)</label>
+              <label className="mb-1 block text-sm font-medium">{t.admin.discountPct}</label>
               <input
                 type="number"
                 min="1"
@@ -632,7 +632,7 @@ export default function ProductForm({
           {form.badge === "sale" && salePreview && salePreview.discount > 0 && (
             <div className="sm:col-span-2 rounded-lg border border-red-100 bg-red-50/50 p-4">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-red-600">
-                İndirim Önizlemesi
+                {t.admin.salePreview}
               </p>
               <div className="flex flex-wrap items-baseline gap-3">
                 <span className="text-lg text-slate-400 line-through">
@@ -642,14 +642,14 @@ export default function ProductForm({
                   {formatPrice(salePreview.salePrice)}
                 </span>
                 <span className="rounded-full bg-red-500 px-2.5 py-0.5 text-xs font-bold text-white">
-                  %{salePreview.discount} indirim
+                  %{salePreview.discount} {t.admin.saleDiscountBadge}
                 </span>
               </div>
             </div>
           )}
 
           <div>
-            <label className="mb-1 block text-sm font-medium">Stok Adedi</label>
+            <label className="mb-1 block text-sm font-medium">{t.admin.stockQty}</label>
             <input
               type="number"
               min="0"
@@ -666,7 +666,7 @@ export default function ProductForm({
                 onChange={(e) => update("inStock", e.target.checked)}
                 className="rounded border-slate-300 text-brand focus:ring-brand"
               />
-              Stokta var
+              {t.admin.inStockLabel}
             </label>
             <label className="flex items-center gap-2 text-sm">
               <input
@@ -675,17 +675,15 @@ export default function ProductForm({
                 onChange={(e) => update("published", e.target.checked)}
                 className="rounded border-slate-300 text-brand focus:ring-brand"
               />
-              Sitede yayınla (görünür)
+              {t.admin.publishSite}
             </label>
           </div>
         </div>
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
-        <h2 className="font-semibold text-slate-800">Ürün Görselleri</h2>
-        <p className="text-sm text-slate-500">
-          Birden fazla görsel ekleyebilirsiniz. İlk görsel ana görsel olarak kullanılır.
-        </p>
+        <h2 className="font-semibold text-slate-800">{t.admin.imagesSection}</h2>
+        <p className="text-sm text-slate-500">{t.admin.imagesHint}</p>
 
         {form.images.length > 0 && (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
@@ -696,14 +694,14 @@ export default function ProductForm({
               >
                 <Image
                   src={img}
-                  alt={`Görsel ${index + 1}`}
+                  alt={`${t.admin.imageAlt} ${index + 1}`}
                   fill
                   className="object-contain p-2"
                 />
                 {index === 0 && (
                   <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-brand px-2 py-0.5 text-[10px] font-semibold text-white">
                     <Star className="h-3 w-3" />
-                    Ana
+                    {t.admin.primary}
                   </span>
                 )}
                 <div className="absolute inset-x-0 bottom-0 flex gap-1 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
@@ -713,14 +711,14 @@ export default function ProductForm({
                       onClick={() => setPrimaryImage(index)}
                       className="flex-1 rounded bg-white/90 px-2 py-1 text-[10px] font-medium text-slate-800 hover:bg-white"
                     >
-                      Ana yap
+                      {t.admin.setPrimary}
                     </button>
                   )}
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
                     className="rounded bg-red-500/90 p-1 text-white hover:bg-red-600"
-                    aria-label="Görseli kaldır"
+                    aria-label={t.admin.removeImage}
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -733,7 +731,7 @@ export default function ProductForm({
         <div className="flex flex-wrap gap-3">
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium hover:bg-slate-100">
             <Upload className="h-4 w-4" />
-            {uploading ? "Yükleniyor..." : "Görsel Yükle"}
+            {uploading ? t.admin.uploading : t.admin.uploadImage}
             <input
               type="file"
               accept="image/*"
@@ -765,7 +763,7 @@ export default function ProductForm({
             onClick={addImageUrl}
             className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
-            URL Ekle
+            {t.admin.addUrl}
           </button>
         </div>
       </div>
@@ -776,7 +774,7 @@ export default function ProductForm({
         className="inline-flex items-center gap-2 rounded-lg bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
       >
         <Save className="h-4 w-4" />
-        {saving ? "Kaydediliyor..." : "Kaydet"}
+        {saving ? t.admin.saving : t.admin.save}
       </button>
     </form>
   );
