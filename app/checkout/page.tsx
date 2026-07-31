@@ -22,10 +22,15 @@ export default function CheckoutPage() {
     customerEmail: "",
     customerAddress: "",
     notes: "",
+    paymentMethod: "cash" as "cash" | "pos",
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [orderId, setOrderId] = useState<string | null>(null);
+
+  const posAvailable =
+    Boolean(settings.onlinePaymentEnabled) &&
+    settings.paymentProvider === "pos";
 
   const shipping =
     totalPrice >= settings.freeShippingMinEur ? 0 : settings.shippingCostEur;
@@ -74,6 +79,7 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          paymentMethod: posAvailable ? form.paymentMethod : "cash",
           locale,
           items: items.map(({ product, quantity }) => ({
             productId: product.id,
@@ -191,15 +197,53 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          <div className="card p-6 space-y-3">
+          <div className="card p-6 space-y-4">
             <h2 className="font-semibold text-slate-800">{t.checkout.paymentTitle}</h2>
-            <p className="text-sm text-neutral">
-              {!settings.onlinePaymentEnabled
-                ? t.checkout.paymentOffline
-                : settings.paymentProvider === "pos"
-                  ? t.checkout.paymentOnlinePos
-                  : t.checkout.paymentOnlineReady}
-            </p>
+            <div className="space-y-3">
+              <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-neutral-border p-3 has-[:checked]:border-brand has-[:checked]:bg-brand-muted/40">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="cash"
+                  checked={form.paymentMethod === "cash"}
+                  onChange={() =>
+                    setForm((p) => ({ ...p, paymentMethod: "cash" }))
+                  }
+                  className="mt-1 border-slate-300 text-brand focus:ring-brand"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-slate-800">
+                    {t.checkout.paymentCash}
+                  </span>
+                  <span className="mt-0.5 block text-xs text-neutral">
+                    {t.checkout.paymentCashHint}
+                  </span>
+                </span>
+              </label>
+
+              {posAvailable ? (
+                <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-neutral-border p-3 has-[:checked]:border-brand has-[:checked]:bg-brand-muted/40">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="pos"
+                    checked={form.paymentMethod === "pos"}
+                    onChange={() =>
+                      setForm((p) => ({ ...p, paymentMethod: "pos" }))
+                    }
+                    className="mt-1 border-slate-300 text-brand focus:ring-brand"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium text-slate-800">
+                      {t.checkout.paymentPos}
+                    </span>
+                    <span className="mt-0.5 block text-xs text-neutral">
+                      {t.checkout.paymentPosHint}
+                    </span>
+                  </span>
+                </label>
+              ) : null}
+            </div>
           </div>
 
           <button

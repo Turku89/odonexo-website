@@ -47,6 +47,9 @@ function formatOrderText(order: Order): string {
     `📞 ${order.customerPhone}`,
     order.customerEmail ? `✉️ ${order.customerEmail}` : "",
     `📍 ${order.customerAddress}`,
+    order.paymentMethod
+      ? `💳 ${order.paymentMethod === "pos" ? "POS" : locale === "en" ? "Cash" : locale === "sq" ? "Cash" : "Nakit"}`
+      : "",
     order.notes ? `📝 ${order.notes}` : "",
     "",
     `${L.lineItems}:`,

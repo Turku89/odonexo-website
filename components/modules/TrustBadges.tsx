@@ -14,7 +14,8 @@ export default function TrustBadges() {
       title: t.trust.fastShipping,
       description: t.trust.fastShippingDesc,
     },
-    settings.onlinePaymentEnabled
+    settings.onlinePaymentEnabled &&
+    settings.paymentProvider === "pos"
       ? {
           icon: ShieldCheck,
           title: t.trust.securePayment,

@@ -331,6 +331,14 @@ export default function OrderDetail({ orderId }: { orderId: string }) {
                 {order.customerAddress}
               </dd>
             </div>
+            <div>
+              <dt className="text-slate-400">{t.admin.orderPaymentMethod}</dt>
+              <dd className="font-medium text-slate-800">
+                {order.paymentMethod === "pos"
+                  ? t.admin.orderPaymentPos
+                  : t.admin.orderPaymentCash}
+              </dd>
+            </div>
             {order.notes ? (
               <div>
                 <dt className="text-slate-400">{t.admin.orderCustomerNote}</dt>

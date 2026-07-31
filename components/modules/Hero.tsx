@@ -30,9 +30,10 @@ export default function Hero({ stats }: HeroProps) {
     { icon: Truck, label: t.hero.fastShipping },
     {
       icon: Shield,
-      label: settings.onlinePaymentEnabled
-        ? t.hero.securePayment
-        : t.hero.easyOrder,
+      label:
+        settings.onlinePaymentEnabled && settings.paymentProvider === "pos"
+          ? t.hero.securePayment
+          : t.hero.easyOrder,
     },
     { icon: Award, label: t.hero.originalProduct },
   ];

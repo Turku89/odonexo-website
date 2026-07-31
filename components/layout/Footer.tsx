@@ -175,7 +175,8 @@ export default function Footer() {
           <p className="text-sm text-slate-400">
             &copy; {new Date().getFullYear()} odonexo.com. {t.footer.rights}
           </p>
-          {settings.onlinePaymentEnabled ? (
+          {settings.onlinePaymentEnabled &&
+          settings.paymentProvider === "pos" ? (
             <div className="flex items-center gap-4 text-xs text-slate-400">
               {settings.showVisa ? <span>Visa</span> : null}
               {settings.showMastercard ? <span>Mastercard</span> : null}

@@ -2,6 +2,14 @@ export type OrderStatus = "new" | "seen" | "approved" | "cancelled";
 
 export type OrderLocale = "tr" | "sq" | "en";
 
+export type OrderPaymentMethod = "cash" | "pos";
+
+export type OrderPaymentStatus =
+  | "pending"
+  | "paid"
+  | "failed"
+  | "not_required";
+
 export interface OrderItem {
   productId: string;
   name: string;
@@ -30,6 +38,11 @@ export interface Order {
   status: OrderStatus;
   /** Sipariş verildiği andaki site dili */
   locale?: OrderLocale;
+  /** Nakit veya POS */
+  paymentMethod?: OrderPaymentMethod;
+  paymentStatus?: OrderPaymentStatus;
+  /** İleride POS sağlayıcı referansı */
+  paymentProviderRef?: string;
   adminNote?: string;
   emailSentAt?: string;
   createdAt: string;
@@ -43,5 +56,6 @@ export interface CheckoutInput {
   customerAddress: string;
   notes?: string;
   locale?: OrderLocale;
+  paymentMethod?: OrderPaymentMethod;
   items: { productId: string; quantity: number }[];
 }

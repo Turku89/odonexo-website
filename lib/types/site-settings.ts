@@ -13,12 +13,16 @@ export interface SiteSettings {
   linkedin: string;
   freeShippingMinEur: number;
   shippingCostEur: number;
-  /** Online kart/POS ödemesi (varsayılan kapalı). */
+  /** POS seçeneğini checkout’ta müşteriye göster. */
   onlinePaymentEnabled: boolean;
   paymentProvider: PaymentProvider;
   showVisa: boolean;
   showMastercard: boolean;
   showTroy: boolean;
+  /** İleride POS API (gizli alanlar public’e gitmez). */
+  posApiBaseUrl: string;
+  posMerchantId: string;
+  posApiKey: string;
   telegramBotToken: string;
   telegramChatId: string;
   /** Sipariş onayı e-postası için SMTP */
@@ -41,6 +45,7 @@ export type PublicSiteSettings = Omit<
   | "smtpUser"
   | "smtpPass"
   | "smtpFrom"
+  | "posApiKey"
 >;
 
 export function toPublicSiteSettings(
@@ -54,6 +59,7 @@ export function toPublicSiteSettings(
     smtpUser: _u,
     smtpPass: _pw,
     smtpFrom: _f,
+    posApiKey: _posKey,
     ...publicSettings
   } = settings;
   return publicSettings;

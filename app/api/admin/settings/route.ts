@@ -39,6 +39,11 @@ export async function PUT(request: Request) {
     showVisa: body.showVisa !== false,
     showMastercard: body.showMastercard !== false,
     showTroy: body.showTroy !== false,
+    posApiBaseUrl: body.posApiBaseUrl ?? "",
+    posMerchantId: body.posMerchantId ?? "",
+    posApiKey: body.posApiKey?.trim()
+      ? body.posApiKey.trim()
+      : current.posApiKey,
     telegramBotToken: body.telegramBotToken?.trim()
       ? body.telegramBotToken.trim()
       : current.telegramBotToken,

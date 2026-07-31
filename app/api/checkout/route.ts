@@ -5,6 +5,11 @@ import { saveOrder } from "@/lib/orders-store";
 import { sendTelegramOrderNotification } from "@/lib/telegram-notify";
 import { getProductName } from "@/lib/product-i18n";
 import { normalizeOrderLocale } from "@/lib/order-invoice-i18n";
+import {
+  isPosCheckoutAvailable,
+  normalizePaymentMethod,
+} from "@/lib/payment/types";
+import { initiatePosPayment } from "@/lib/payment/pos-client";
 import type { CheckoutInput, Order, OrderItem } from "@/lib/types/order";
 
 export async function POST(request: Request) {
@@ -16,7 +21,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Geçersiz istek" }, { status: 400 });
   }
 
-  if (!body.customerName?.trim() || !body.customerPhone?.trim() || !body.customerAddress?.trim()) {
+  if (
+    !body.customerName?.trim() ||
+    !body.customerPhone?.trim() ||
+    !body.customerAddress?.trim()
+  ) {
     return NextResponse.json(
       { error: "Ad, telefon ve adres zorunludur" },
       { status: 400 }
@@ -33,6 +42,12 @@ export async function POST(request: Request) {
     readPublishedProducts(),
     readSiteSettings(),
   ]);
+
+  const posAvailable = isPosCheckoutAvailable(settings);
+  const paymentMethod = normalizePaymentMethod(
+    body.paymentMethod,
+    posAvailable
+  );
 
   const productMap = new Map(products.map((p) => [p.id, p]));
   const orderItems: OrderItem[] = [];
@@ -78,8 +93,17 @@ export async function POST(request: Request) {
     currency: "EUR",
     status: "new",
     locale,
+    paymentMethod,
+    paymentStatus: "pending",
     createdAt: new Date().toISOString(),
   };
+
+  if (paymentMethod === "pos") {
+    const posResult = await initiatePosPayment(order, settings);
+    if (posResult.ok && posResult.providerRef) {
+      order.paymentProviderRef = posResult.providerRef;
+    }
+  }
 
   await saveOrder(order);
 
@@ -93,6 +117,7 @@ export async function POST(request: Request) {
   return NextResponse.json({
     success: true,
     orderId: order.id,
+    paymentMethod: order.paymentMethod,
     telegramSent,
   });
 }

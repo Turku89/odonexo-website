@@ -78,6 +78,10 @@ function normalizeSettings(raw: LegacySiteSettings): SiteSettings {
     showVisa: raw.showVisa ?? defaultSiteSettings.showVisa,
     showMastercard: raw.showMastercard ?? defaultSiteSettings.showMastercard,
     showTroy: raw.showTroy ?? defaultSiteSettings.showTroy,
+    posApiBaseUrl: raw.posApiBaseUrl ?? "",
+    posMerchantId: raw.posMerchantId ?? "",
+    posApiKey:
+      process.env.POS_API_KEY?.trim() || raw.posApiKey || "",
     telegramBotToken:
       process.env.TELEGRAM_BOT_TOKEN?.trim() ||
       raw.telegramBotToken ||
@@ -150,6 +154,9 @@ export async function updateSiteSettings(
     smtpPass: process.env.SMTP_PASS?.trim()
       ? currentRaw.smtpPass || ""
       : updated.smtpPass,
+    posApiKey: process.env.POS_API_KEY?.trim()
+      ? currentRaw.posApiKey || ""
+      : updated.posApiKey,
   };
 
   const dir = getWritableDataDir();
