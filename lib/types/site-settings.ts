@@ -1,3 +1,6 @@
+/** İleride gerçek POS bağlanınca genişletilir. */
+export type PaymentProvider = "none" | "manual" | "pos";
+
 export interface SiteSettings {
   phone: string;
   whatsapp: string;
@@ -10,6 +13,12 @@ export interface SiteSettings {
   linkedin: string;
   freeShippingMinEur: number;
   shippingCostEur: number;
+  /** Online kart/POS ödemesi (varsayılan kapalı). */
+  onlinePaymentEnabled: boolean;
+  paymentProvider: PaymentProvider;
+  showVisa: boolean;
+  showMastercard: boolean;
+  showTroy: boolean;
   telegramBotToken: string;
   telegramChatId: string;
   /** Sipariş onayı e-postası için SMTP */

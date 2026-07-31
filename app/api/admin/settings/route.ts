@@ -31,6 +31,14 @@ export async function PUT(request: Request) {
     linkedin: body.linkedin ?? "",
     freeShippingMinEur: Number(body.freeShippingMinEur) || 50,
     shippingCostEur: Number(body.shippingCostEur) || 5,
+    onlinePaymentEnabled: Boolean(body.onlinePaymentEnabled),
+    paymentProvider:
+      body.paymentProvider === "manual" || body.paymentProvider === "pos"
+        ? body.paymentProvider
+        : "none",
+    showVisa: body.showVisa !== false,
+    showMastercard: body.showMastercard !== false,
+    showTroy: body.showTroy !== false,
     telegramBotToken: body.telegramBotToken?.trim()
       ? body.telegramBotToken.trim()
       : current.telegramBotToken,

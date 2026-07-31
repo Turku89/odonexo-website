@@ -191,6 +191,17 @@ export default function CheckoutPage() {
             </div>
           </div>
 
+          <div className="card p-6 space-y-3">
+            <h2 className="font-semibold text-slate-800">{t.checkout.paymentTitle}</h2>
+            <p className="text-sm text-neutral">
+              {!settings.onlinePaymentEnabled
+                ? t.checkout.paymentOffline
+                : settings.paymentProvider === "pos"
+                  ? t.checkout.paymentOnlinePos
+                  : t.checkout.paymentOnlineReady}
+            </p>
+          </div>
+
           <button
             type="submit"
             disabled={submitting}

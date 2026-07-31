@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Shield, Truck, Award } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { useSiteSettings } from "@/lib/site-settings-context";
 
 interface HeroStats {
   productCount: number;
@@ -16,6 +17,7 @@ interface HeroProps {
 
 export default function Hero({ stats }: HeroProps) {
   const { t } = useLanguage();
+  const settings = useSiteSettings();
 
   const statCards = [
     { title: String(stats.productCount), sub: t.hero.statProducts },
@@ -26,7 +28,12 @@ export default function Hero({ stats }: HeroProps) {
 
   const features = [
     { icon: Truck, label: t.hero.fastShipping },
-    { icon: Shield, label: t.hero.securePayment },
+    {
+      icon: Shield,
+      label: settings.onlinePaymentEnabled
+        ? t.hero.securePayment
+        : t.hero.easyOrder,
+    },
     { icon: Award, label: t.hero.originalProduct },
   ];
 

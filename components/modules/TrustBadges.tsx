@@ -2,15 +2,39 @@
 
 import { Truck, ShieldCheck, Headphones, RotateCcw } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { useSiteSettings } from "@/lib/site-settings-context";
 
 export default function TrustBadges() {
   const { t } = useLanguage();
+  const settings = useSiteSettings();
 
   const badges = [
-    { icon: Truck, title: t.trust.fastShipping, description: t.trust.fastShippingDesc },
-    { icon: ShieldCheck, title: t.trust.securePayment, description: t.trust.securePaymentDesc },
-    { icon: Headphones, title: t.trust.support, description: t.trust.supportDesc },
-    { icon: RotateCcw, title: t.trust.easyReturn, description: t.trust.easyReturnDesc },
+    {
+      icon: Truck,
+      title: t.trust.fastShipping,
+      description: t.trust.fastShippingDesc,
+    },
+    settings.onlinePaymentEnabled
+      ? {
+          icon: ShieldCheck,
+          title: t.trust.securePayment,
+          description: t.trust.securePaymentDesc,
+        }
+      : {
+          icon: ShieldCheck,
+          title: t.trust.orderBased,
+          description: t.trust.orderBasedDesc,
+        },
+    {
+      icon: Headphones,
+      title: t.trust.support,
+      description: t.trust.supportDesc,
+    },
+    {
+      icon: RotateCcw,
+      title: t.trust.easyReturn,
+      description: t.trust.easyReturnDesc,
+    },
   ];
 
   return (

@@ -1,8 +1,20 @@
 import { promises as fs } from "fs";
 import path from "path";
-import type { SiteSettings, SiteSettingsInput } from "@/lib/types/site-settings";
+import type {
+  PaymentProvider,
+  SiteSettings,
+  SiteSettingsInput,
+} from "@/lib/types/site-settings";
 import { defaultSiteSettings } from "@/lib/data/site-settings-seed";
 import { getReadableDataDir, getWritableDataDir } from "@/lib/data-paths";
+
+const PAYMENT_PROVIDERS: PaymentProvider[] = ["none", "manual", "pos"];
+
+function normalizePaymentProvider(value: unknown): PaymentProvider {
+  return PAYMENT_PROVIDERS.includes(value as PaymentProvider)
+    ? (value as PaymentProvider)
+    : defaultSiteSettings.paymentProvider;
+}
 
 const SETTINGS_FILE_NAME = "site-settings.json";
 
@@ -59,6 +71,13 @@ function normalizeSettings(raw: LegacySiteSettings): SiteSettings {
       raw.shippingCostEur != null && raw.shippingCostEur >= 0
         ? raw.shippingCostEur
         : defaultSiteSettings.shippingCostEur,
+    onlinePaymentEnabled: Boolean(
+      raw.onlinePaymentEnabled ?? defaultSiteSettings.onlinePaymentEnabled
+    ),
+    paymentProvider: normalizePaymentProvider(raw.paymentProvider),
+    showVisa: raw.showVisa ?? defaultSiteSettings.showVisa,
+    showMastercard: raw.showMastercard ?? defaultSiteSettings.showMastercard,
+    showTroy: raw.showTroy ?? defaultSiteSettings.showTroy,
     telegramBotToken:
       process.env.TELEGRAM_BOT_TOKEN?.trim() ||
       raw.telegramBotToken ||

@@ -42,6 +42,7 @@ const tr = {
     ctaCategories: "Kategorilere Göz At",
     fastShipping: "Hızlı Kargo",
     securePayment: "Güvenli Ödeme",
+    easyOrder: "Kolay Sipariş",
     originalProduct: "Orijinal Ürün",
     statProducts: "Ürün Çeşidi",
     statCategories: "Kategori",
@@ -53,6 +54,8 @@ const tr = {
     fastShippingDesc: "50 € üzeri siparişlerde ücretsiz kargo",
     securePayment: "Güvenli Ödeme",
     securePaymentDesc: "256-bit SSL ile korumalı ödeme",
+    orderBased: "Sipariş & İletişim",
+    orderBasedDesc: "Sipariş sonrası ekibimiz sizinle iletişime geçer",
     support: "Teknik Destek",
     supportDesc: "Uzman ekibimizden 7/24 destek",
     easyReturn: "Kolay İade",
@@ -127,6 +130,12 @@ const tr = {
     notes: "Sipariş Notu (isteğe bağlı)",
     placeOrder: "Siparişi Gönder",
     placing: "Gönderiliyor...",
+    paymentTitle: "Ödeme",
+    paymentOffline:
+      "Şu an online ödeme kapalı. Siparişinizi gönderin; ekibimiz sizinle iletişime geçerek ödemeyi tamamlar.",
+    paymentOnlineReady:
+      "Online ödeme aktif. Kart ile ödeme POS entegrasyonu bağlandığında burada görünecek.",
+    paymentOnlinePos: "Kart ile güvenli ödeme (POS).",
     successTitle: "Siparişiniz Alındı!",
     successDesc: "Sipariş numaranız:",
     successThanks: "En kısa sürede sizinle iletişime geçeceğiz.",
@@ -474,6 +483,22 @@ const tr = {
     orderItemsEditHint:
       "Adedi düşürebilir veya \"Stokta yok\" işaretleyebilirsiniz. Tutarlar kaydet / onayda otomatik güncellenir.",
     orderItemNotePlaceholder: "Düzeltme notu (örn: 2 yerine 1 adet gönderilecek)",
+    paymentSection: "Online Ödeme / POS",
+    paymentSectionHint:
+      "Kapalıyken sitede kart logoları görünmez. POS bağlayınca buradan açıp markaları seçebilirsiniz.",
+    paymentEnabled: "Online ödemeyi aç",
+    paymentEnabledHelp:
+      "Açıkken footer’da seçili kart markaları gösterilir. Gerçek tahsilat için POS entegrasyonu gerekir.",
+    paymentProvider: "Ödeme sağlayıcı",
+    paymentProviderNone: "Yok (yalnızca gösterim)",
+    paymentProviderManual: "Manuel (sipariş sonrası)",
+    paymentProviderPos: "POS (ileride bağlanacak)",
+    paymentBrands: "Footer’da gösterilecek kartlar",
+    paymentBrandVisa: "Visa",
+    paymentBrandMastercard: "Mastercard",
+    paymentBrandTroy: "Troy",
+    paymentPosNote:
+      "POS API anahtarları eklendiğinde bu bölüm genişletilecek. Şimdilik sadece görünürlük ve hazırlık ayarıdır.",
   },
   categoryData: {
     "seramik-porselen": {
@@ -541,6 +566,7 @@ const sq: TranslationKeys = {
     ctaCategories: "Shiko Kategoritë",
     fastShipping: "Transport i Shpejtë",
     securePayment: "Pagesë e Sigurt",
+    easyOrder: "Porosi e Lehtë",
     originalProduct: "Produkt Origjinal",
     statProducts: "Lloje Produktesh",
     statCategories: "Kategori",
@@ -552,6 +578,8 @@ const sq: TranslationKeys = {
     fastShippingDesc: "Transport falas për porosi mbi 50 €",
     securePayment: "Pagesë e Sigurt",
     securePaymentDesc: "Pagesë e mbrojtur me SSL 256-bit",
+    orderBased: "Porosi & Kontakt",
+    orderBasedDesc: "Pas porosisë ekipi ynë ju kontakton",
     support: "Mbështetje Teknike",
     supportDesc: "Mbështetje 24/7 nga ekipi ynë i ekspertëve",
     easyReturn: "Kthim i Lehtë",
@@ -626,6 +654,12 @@ const sq: TranslationKeys = {
     notes: "Shënim (opsionale)",
     placeOrder: "Dërgo Porosinë",
     placing: "Duke dërguar...",
+    paymentTitle: "Pagesa",
+    paymentOffline:
+      "Pagesa online është e fikur. Dërgoni porosinë; ekipi ynë ju kontakton për pagesën.",
+    paymentOnlineReady:
+      "Pagesa online është aktive. Pagesa me kartë do të shfaqet kur POS të lidhet.",
+    paymentOnlinePos: "Pagesë e sigurt me kartë (POS).",
     successTitle: "Porosia u pranua!",
     successDesc: "Numri i porosisë:",
     successThanks: "Do t'ju kontaktojmë së shpejti.",
@@ -973,6 +1007,22 @@ const sq: TranslationKeys = {
     orderItemsEditHint:
       "Mund të ulni sasinë ose të shënoni \"Jashtë stoku\". Totalet përditësohen në ruajtje / aprovim.",
     orderItemNotePlaceholder: "Shënim ndryshimi (p.sh.: do të dërgohet 1 në vend të 2)",
+    paymentSection: "Pagesa Online / POS",
+    paymentSectionHint:
+      "Kur është fikur, logot e kartave nuk shfaqen. Kur lidhni POS, hapeni këtu dhe zgjidhni markat.",
+    paymentEnabled: "Aktivizo pagesën online",
+    paymentEnabledHelp:
+      "Kur është hapur, markat e zgjedhura shfaqen në footer. Për pagesë reale duhet integrim POS.",
+    paymentProvider: "Ofruesi i pagesës",
+    paymentProviderNone: "Asnjë (vetëm shfaqje)",
+    paymentProviderManual: "Manual (pas porosisë)",
+    paymentProviderPos: "POS (do të lidhet më vonë)",
+    paymentBrands: "Kartat në footer",
+    paymentBrandVisa: "Visa",
+    paymentBrandMastercard: "Mastercard",
+    paymentBrandTroy: "Troy",
+    paymentPosNote:
+      "Kur shtohen çelësat API të POS, ky seksion do të zgjerohet. Tani është vetëm përgatitje dhe dukshmëri.",
   },
   categoryData: {
     "seramik-porselen": {
@@ -1038,6 +1088,7 @@ const en: TranslationKeys = {
     ctaCategories: "Browse Categories",
     fastShipping: "Fast Shipping",
     securePayment: "Secure Payment",
+    easyOrder: "Easy Ordering",
     originalProduct: "Original Products",
     statProducts: "Product Types",
     statCategories: "Categories",
@@ -1049,6 +1100,8 @@ const en: TranslationKeys = {
     fastShippingDesc: "Free shipping on orders over €50",
     securePayment: "Secure Payment",
     securePaymentDesc: "Protected checkout with 256-bit SSL",
+    orderBased: "Order & Contact",
+    orderBasedDesc: "After you order, our team will contact you",
     support: "Technical Support",
     supportDesc: "24/7 support from our expert team",
     easyReturn: "Easy Returns",
@@ -1123,6 +1176,12 @@ const en: TranslationKeys = {
     notes: "Order Notes (optional)",
     placeOrder: "Place Order",
     placing: "Sending...",
+    paymentTitle: "Payment",
+    paymentOffline:
+      "Online payment is currently off. Place your order and our team will contact you to complete payment.",
+    paymentOnlineReady:
+      "Online payment is enabled. Card checkout will appear here once POS is connected.",
+    paymentOnlinePos: "Secure card payment (POS).",
     successTitle: "Order Received!",
     successDesc: "Your order number:",
     successThanks: "We will contact you shortly.",
@@ -1470,6 +1529,22 @@ const en: TranslationKeys = {
     orderItemsEditHint:
       "You can lower quantity or mark \"Out of stock\". Totals update on save / approve.",
     orderItemNotePlaceholder: "Edit note (e.g.: 1 will be shipped instead of 2)",
+    paymentSection: "Online Payment / POS",
+    paymentSectionHint:
+      "When off, card logos are hidden. After connecting a POS, enable it here and select brands.",
+    paymentEnabled: "Enable online payment",
+    paymentEnabledHelp:
+      "When on, selected card brands appear in the footer. Real charging requires POS integration.",
+    paymentProvider: "Payment provider",
+    paymentProviderNone: "None (display only)",
+    paymentProviderManual: "Manual (after order)",
+    paymentProviderPos: "POS (to be connected later)",
+    paymentBrands: "Card brands in footer",
+    paymentBrandVisa: "Visa",
+    paymentBrandMastercard: "Mastercard",
+    paymentBrandTroy: "Troy",
+    paymentPosNote:
+      "When POS API keys are added, this section will expand. For now it only controls visibility and readiness.",
   },
   categoryData: {
     "seramik-porselen": {

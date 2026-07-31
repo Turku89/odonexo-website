@@ -175,12 +175,14 @@ export default function Footer() {
           <p className="text-sm text-slate-400">
             &copy; {new Date().getFullYear()} odonexo.com. {t.footer.rights}
           </p>
-          <div className="flex items-center gap-4 text-xs text-slate-400">
-            <span>Visa</span>
-            <span>Mastercard</span>
-            <span>Troy</span>
-            <span>{t.footer.ssl}</span>
-          </div>
+          {settings.onlinePaymentEnabled ? (
+            <div className="flex items-center gap-4 text-xs text-slate-400">
+              {settings.showVisa ? <span>Visa</span> : null}
+              {settings.showMastercard ? <span>Mastercard</span> : null}
+              {settings.showTroy ? <span>Troy</span> : null}
+              <span>{t.footer.ssl}</span>
+            </div>
+          ) : null}
         </div>
       </div>
     </footer>

@@ -38,6 +38,11 @@ export default function ContactSettingsForm({
     linkedin: settings.linkedin ?? "",
     freeShippingMinEur: settings.freeShippingMinEur ?? 50,
     shippingCostEur: settings.shippingCostEur ?? 5,
+    onlinePaymentEnabled: settings.onlinePaymentEnabled ?? false,
+    paymentProvider: settings.paymentProvider ?? "none",
+    showVisa: settings.showVisa ?? true,
+    showMastercard: settings.showMastercard ?? true,
+    showTroy: settings.showTroy ?? true,
     telegramBotToken: "",
     telegramChatId: settings.telegramChatId ?? "",
     smtpHost: settings.smtpHost ?? "",
@@ -50,7 +55,7 @@ export default function ContactSettingsForm({
   const hasBotToken = Boolean(settings.telegramBotToken);
   const hasSmtpPass = Boolean(settings.smtpPass);
 
-  const update = (key: string, value: string) => {
+  const update = (key: string, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setSuccess(false);
   };
@@ -169,6 +174,86 @@ export default function ContactSettingsForm({
             />
           </div>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
+        <div>
+          <h2 className="font-semibold text-slate-800">{t.admin.paymentSection}</h2>
+          <p className="mt-1 text-sm text-slate-500">{t.admin.paymentSectionHint}</p>
+        </div>
+
+        <label className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+          <input
+            type="checkbox"
+            checked={form.onlinePaymentEnabled}
+            onChange={(e) => update("onlinePaymentEnabled", e.target.checked)}
+            className="mt-0.5 rounded border-slate-300 text-brand focus:ring-brand"
+          />
+          <span>
+            <span className="block font-medium text-slate-800">
+              {t.admin.paymentEnabled}
+            </span>
+            <span className="mt-0.5 block text-xs text-slate-500">
+              {t.admin.paymentEnabledHelp}
+            </span>
+          </span>
+        </label>
+
+        {form.onlinePaymentEnabled ? (
+          <div className="space-y-5 border-t border-slate-100 pt-5">
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                {t.admin.paymentProvider}
+              </label>
+              <select
+                value={form.paymentProvider}
+                onChange={(e) => update("paymentProvider", e.target.value)}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+              >
+                <option value="none">{t.admin.paymentProviderNone}</option>
+                <option value="manual">{t.admin.paymentProviderManual}</option>
+                <option value="pos">{t.admin.paymentProviderPos}</option>
+              </select>
+            </div>
+
+            <div>
+              <p className="mb-2 text-sm font-medium">{t.admin.paymentBrands}</p>
+              <div className="flex flex-wrap gap-4">
+                <label className="inline-flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={form.showVisa}
+                    onChange={(e) => update("showVisa", e.target.checked)}
+                    className="rounded border-slate-300 text-brand focus:ring-brand"
+                  />
+                  {t.admin.paymentBrandVisa}
+                </label>
+                <label className="inline-flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={form.showMastercard}
+                    onChange={(e) => update("showMastercard", e.target.checked)}
+                    className="rounded border-slate-300 text-brand focus:ring-brand"
+                  />
+                  {t.admin.paymentBrandMastercard}
+                </label>
+                <label className="inline-flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={form.showTroy}
+                    onChange={(e) => update("showTroy", e.target.checked)}
+                    className="rounded border-slate-300 text-brand focus:ring-brand"
+                  />
+                  {t.admin.paymentBrandTroy}
+                </label>
+              </div>
+            </div>
+
+            <p className="rounded-lg bg-amber-50 px-4 py-3 text-xs text-amber-800">
+              {t.admin.paymentPosNote}
+            </p>
+          </div>
+        ) : null}
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
