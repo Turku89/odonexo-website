@@ -13,6 +13,9 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
 });
 
+/** Site ayarları (sosyal linkler vb.) her istekte taze okunmalı. */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: {
     default: "odonexo.com | Diş Laboratuvar Malzemeleri",

@@ -52,5 +52,25 @@ export function socialHref(url: string): string {
   if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
     return trimmed;
   }
-  return `https://${trimmed}`;
+  if (trimmed.startsWith("//")) {
+    return `https:${trimmed}`;
+  }
+  return `https://${trimmed.replace(/^\/+/, "")}`;
+}
+
+/** @user, tiktok.com/@user veya tam URL kabul eder. */
+export function tiktokHref(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+  if (/^(www\.)?tiktok\.com\//i.test(trimmed)) {
+    return `https://${trimmed.replace(/^\/+/, "")}`;
+  }
+  const handle = trimmed.replace(/^@/, "");
+  if (!handle.includes(".") && !handle.includes("/")) {
+    return `https://www.tiktok.com/@${handle}`;
+  }
+  return socialHref(trimmed);
 }

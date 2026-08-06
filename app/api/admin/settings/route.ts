@@ -29,6 +29,7 @@ export async function PUT(request: Request) {
     facebook: body.facebook ?? "",
     instagram: body.instagram ?? "",
     linkedin: body.linkedin ?? "",
+    tiktok: body.tiktok ?? "",
     freeShippingMinEur: Number(body.freeShippingMinEur) || 50,
     shippingCostEur: Number(body.shippingCostEur) || 5,
     onlinePaymentEnabled: Boolean(body.onlinePaymentEnabled),
@@ -55,9 +56,18 @@ export async function PUT(request: Request) {
     smtpUser: body.smtpUser ?? "",
     smtpPass: body.smtpPass?.trim() ? body.smtpPass.trim() : current.smtpPass,
     smtpFrom: body.smtpFrom ?? body.email ?? "",
+  }).catch((err: unknown) => {
+    const message =
+      err instanceof Error ? err.message : "Ayarlar kaydedilemedi";
+    return NextResponse.json({ error: message }, { status: 500 });
   });
 
+  if (updated instanceof NextResponse) {
+    return updated;
+  }
+
   revalidatePath("/", "layout");
+  revalidatePath("/admin/settings");
 
   return NextResponse.json(updated);
 }

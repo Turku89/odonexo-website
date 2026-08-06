@@ -11,6 +11,7 @@ export interface SiteSettings {
   facebook: string;
   instagram: string;
   linkedin: string;
+  tiktok: string;
   freeShippingMinEur: number;
   shippingCostEur: number;
   /** POS seçeneğini checkout’ta müşteriye göster. */

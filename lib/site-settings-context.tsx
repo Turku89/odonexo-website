@@ -36,6 +36,23 @@ export function SiteSettingsProvider({
     setSettings(initialSettings);
   }, [initialSettings]);
 
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/site-settings", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data && typeof data === "object") {
+          setSettings((prev) => ({ ...prev, ...data }));
+        }
+      })
+      .catch(() => {
+        /* ignore */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const updateSettings = useCallback((next: PublicSiteSettings) => {
     setSettings(next);
   }, []);

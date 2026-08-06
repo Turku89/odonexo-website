@@ -10,6 +10,7 @@ export const defaultSiteSettings: SiteSettings = {
   facebook: "",
   instagram: "",
   linkedin: "",
+  tiktok: "",
   freeShippingMinEur: 50,
   shippingCostEur: 5,
   onlinePaymentEnabled: false,

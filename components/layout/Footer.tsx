@@ -7,6 +7,7 @@ import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, MessageCircle, Send
 import type { CategoryWithCount } from "@/lib/types/category";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { useSiteSettings } from "@/lib/site-settings-context";
+import TikTokIcon from "@/components/icons/TikTokIcon";
 import {
   telHref,
   mailtoHref,
@@ -15,6 +16,7 @@ import {
   formatWhatsappDisplay,
   formatTelegramDisplay,
   socialHref,
+  tiktokHref,
 } from "@/lib/contact-links";
 
 export default function Footer() {
@@ -41,6 +43,7 @@ export default function Footer() {
     { icon: Facebook, label: "Facebook", href: socialHref(settings.facebook) },
     { icon: Instagram, label: "Instagram", href: socialHref(settings.instagram) },
     { icon: Linkedin, label: "LinkedIn", href: socialHref(settings.linkedin) },
+    { icon: TikTokIcon, label: "TikTok", href: tiktokHref(settings.tiktok) },
   ].filter((item) => item.href);
 
   return (

@@ -36,6 +36,7 @@ export default function ContactSettingsForm({
     facebook: settings.facebook ?? "",
     instagram: settings.instagram ?? "",
     linkedin: settings.linkedin ?? "",
+    tiktok: settings.tiktok ?? "",
     freeShippingMinEur: settings.freeShippingMinEur ?? 50,
     shippingCostEur: settings.shippingCostEur ?? 5,
     onlinePaymentEnabled: settings.onlinePaymentEnabled ?? false,
@@ -80,9 +81,21 @@ export default function ContactSettingsForm({
       const updated = (await res.json()) as SiteSettings;
       updateSiteSettings(toPublicSiteSettings(updated));
       setSuccess(true);
+      // Footer/context için public ayarları doğrula
+      try {
+        const publicRes = await fetch("/api/site-settings", {
+          cache: "no-store",
+        });
+        if (publicRes.ok) {
+          const pub = await publicRes.json();
+          updateSiteSettings(pub);
+        }
+      } catch {
+        /* client update yeterli */
+      }
       router.refresh();
     } else {
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       setError(data.error || t.admin.saveFailed);
     }
     setSaving(false);
@@ -510,12 +523,21 @@ export default function ContactSettingsForm({
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             />
           </div>
-          <div className="sm:col-span-2">
+          <div>
             <label className="mb-1 block text-sm font-medium">{t.admin.linkedinLabel}</label>
             <input
               value={form.linkedin}
               onChange={(e) => update("linkedin", e.target.value)}
               placeholder="https://linkedin.com/company/odonexo"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">{t.admin.tiktokLabel}</label>
+            <input
+              value={form.tiktok}
+              onChange={(e) => update("tiktok", e.target.value)}
+              placeholder="@odonexo veya https://www.tiktok.com/@odonexo"
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             />
           </div>
